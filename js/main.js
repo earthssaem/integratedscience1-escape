@@ -98,9 +98,13 @@ const ROOMS = {
 function sceneArt(theme) {
   let seed = theme === 'r1' ? 7 : theme === 'r2' ? 13 : theme === 'r3' ? 21 : theme === 'final' ? 31 : 29;
   const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let stars = '';
   for (let i = 0; i < 60; i++) {
-    stars += `<circle cx="${(rnd() * 1200).toFixed(0)}" cy="${(rnd() * 620).toFixed(0)}" r="${(0.6 + rnd() * 1.6).toFixed(1)}" fill="#cfe9ff" opacity="${(0.2 + rnd() * 0.6).toFixed(2)}"/>`;
+    const op = (0.2 + rnd() * 0.6).toFixed(2);
+    const twinkle = (!reduceMotion && i % 4 === 0)
+      ? `<animate attributeName="opacity" values="${op};0.05;${op}" dur="${(2 + rnd() * 4).toFixed(1)}s" repeatCount="indefinite"/>` : '';
+    stars += `<circle cx="${(rnd() * 1200).toFixed(0)}" cy="${(rnd() * 620).toFixed(0)}" r="${(0.6 + rnd() * 1.6).toFixed(1)}" fill="#cfe9ff" opacity="${op}">${twinkle}</circle>`;
   }
   let extra = '';
   if (theme === 'r1') {
@@ -162,6 +166,19 @@ function renderTopbar() {
     chipsBox.appendChild(el(`<span class="chip-dot ${hasItem(c) ? 'got' : ''}" title="시간 좌표 칩 ${i + 1}">${i + 1}</span>`));
   });
   $('#tb-time').textContent = fmtTime(state.playMs);
+  // 시공간 안정도 게이지
+  const stab = Math.round(state.stability);
+  $('#stab-fill').style.width = `${stab}%`;
+  $('#stab-pct').textContent = `${stab}%`;
+  $('.stab-gauge').classList.toggle('danger', stab <= 30);
+  // 반 · 팀명
+  const teamEl = $('#tb-team');
+  if (state.team && (state.team.cls || state.team.name)) {
+    teamEl.textContent = `🚀 ${[state.team.cls, state.team.name].filter(Boolean).join(' · ')}`;
+    teamEl.classList.remove('hidden');
+  } else {
+    teamEl.classList.add('hidden');
+  }
   const sb = $('#btn-sound');
   sb.textContent = state.settings.sound ? '🔊 소리 켜짐' : '🔇 소리 꺼짐';
   sb.setAttribute('aria-pressed', state.settings.sound ? 'true' : 'false');
@@ -245,14 +262,28 @@ function renderRoom() {
   renderTopbar();
 }
 
+function warpFlash() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ov = $('#fx-overlay');
+  ov.classList.remove('hidden');
+  ov.classList.add('warp-mode');
+  ov.innerHTML = '<div class="warp"></div>';
+  setTimeout(() => {
+    ov.classList.add('hidden');
+    ov.classList.remove('warp-mode');
+    ov.innerHTML = '';
+  }, 620);
+}
+
 function enterRoom(r) {
   state.room = r;
   saveGame();
   showScreen('game');
   renderRoom();
   renderInventory();
-  if (r === 'final') toast('타임머신 앞에 도착했습니다.');
-  else toast(`${ROOMS[r].name}에 입장했습니다.`);
+  warpFlash();
+  if (r === 'final') { toast('타임머신 앞에 도착했습니다.'); aiSay(AI_LINES.final); }
+  else { toast(`${ROOMS[r].name}에 입장했습니다.`); aiSay(AI_LINES.room[r]); }
 }
 
 /* ---------- 방 통과 연출 ---------- */
@@ -363,14 +394,52 @@ function playEscape() {
   }, reduce ? 250 : 2700);
 }
 
+/* ---------- 탐사 등급 · 결과 보고서 ---------- */
+function calcRank() {
+  const min = state.playMs / 60000;
+  let score = 100 - state.wrongCount * 3 - state.hintCount * 4 - Math.max(0, min - 35) * 1.5;
+  score = Math.max(0, Math.round(score));
+  const rank = score >= 90 ? 'S' : score >= 75 ? 'A' : score >= 60 ? 'B' : 'C';
+  return { score, rank };
+}
+function buildReport() {
+  const { score, rank } = calcRank();
+  const t = state.team || { cls: '', name: '' };
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const when = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const payload = {
+    c: t.cls, t: t.name, ms: Math.round(state.playMs),
+    h: state.hintCount, w: state.wrongCount,
+    st: Math.round(state.stability), s: score, r: rank, d: when,
+  };
+  const json = JSON.stringify(payload);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const sum = [...json].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 9973;
+  const code = (b64 + '.' + sum.toString(36).toUpperCase()).replace(/(.{24})/g, '$1\n');
+  const text = [
+    '[통합과학 방탈출 · 138억 년의 여정] 탈출 성공 보고서',
+    `반: ${t.cls || '-'} / 팀명: ${t.name || '-'}`,
+    `탈출 완료: ${when}`,
+    `플레이 시간: ${fmtTime(state.playMs)} | 힌트: ${state.hintCount}회 | 오답: ${state.wrongCount}회 | 시공간 안정도: ${Math.round(state.stability)}%`,
+    `탐사 평점: ${score}점 / 탐사 등급: ${rank}`,
+    '── 검증 코드 (수정 금지) ──',
+    code,
+  ].join('\n');
+  return { text, score, rank };
+}
+
 /* ---------- 결과 화면 ---------- */
 function showResult() {
   const sec = $('#screen-result');
   sec.innerHTML = '';
+  const report = buildReport();
+  const t = state.team || { cls: '', name: '' };
   const card = el(`<div class="result-card">
     <p class="start-kicker">MISSION COMPLETE</p>
     <h2>🎉 탈출 성공!</h2>
-    <p>138억 년의 여정을 지나 현재의 통합과학 교실로 돌아왔습니다.</p>
+    <p>${t.name ? `<strong>${esc([t.cls, t.name].filter(Boolean).join(' · '))}</strong> 팀, ` : ''}138억 년의 여정을 지나 현재의 통합과학 교실로 돌아왔습니다.</p>
+    <div class="rank-badge"><span class="rank-letter">${esc(report.rank)}</span><span class="rank-k">탐사 등급 · ${report.score}점</span></div>
     <div class="result-story">${FINAL_MESSAGE.map(m => `<p>${esc(m)}</p>`).join('')}</div>
     <div class="result-chips">
       <span class="result-chip">칩① 38</span><span class="result-chip">칩② 4</span>
@@ -380,7 +449,14 @@ function showResult() {
       <div class="stat"><span class="stat-v">${esc(fmtTime(state.playMs))}</span><span class="stat-k">총 플레이 시간</span></div>
       <div class="stat"><span class="stat-v">${state.hintCount}</span><span class="stat-k">사용한 힌트</span></div>
       <div class="stat"><span class="stat-v">${state.wrongCount}</span><span class="stat-k">오답 횟수</span></div>
-      <div class="stat"><span class="stat-v">4/4</span><span class="stat-k">시간 좌표 칩</span></div>
+      <div class="stat"><span class="stat-v">${Math.round(state.stability)}%</span><span class="stat-k">시공간 안정도</span></div>
+    </div>
+    <p style="text-align:left;margin:0.8rem 0 0.2rem"><strong>📤 결과 제출</strong>
+      <span class="puzzle-note" style="display:block">아래 보고서를 복사하거나 파일로 저장해 선생님께 제출하세요.</span></p>
+    <textarea id="report-text" class="report-box" readonly aria-label="탈출 결과 보고서"></textarea>
+    <div class="result-btns" style="margin-bottom:0.9rem">
+      <button type="button" class="btn" id="btn-copy-report">📋 보고서 복사</button>
+      <button type="button" class="btn" id="btn-save-report">💾 파일로 저장</button>
     </div>
     <div class="result-btns">
       <button type="button" class="btn btn-big" id="btn-review">📘 핵심 개념 다시 보기</button>
@@ -388,6 +464,29 @@ function showResult() {
     </div>
   </div>`);
   sec.appendChild(card);
+  $('#report-text', card).value = report.text;
+  $('#btn-copy-report', card).addEventListener('click', async () => {
+    const ta = $('#report-text', card);
+    try {
+      await navigator.clipboard.writeText(ta.value);
+      toast('보고서가 복사되었습니다. 선생님께 제출하세요!');
+    } catch (e) {
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); toast('보고서가 복사되었습니다.'); }
+      catch (e2) { toast('자동 복사가 안 되는 환경입니다. 텍스트를 길게 눌러 직접 복사하세요.'); }
+    }
+  });
+  $('#btn-save-report', card).addEventListener('click', () => {
+    const blob = new Blob([$('#report-text', card).value], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const safe = (s) => (s || '').replace(/[\\/:*?"<>|\s]+/g, '_');
+    a.download = `방탈출결과_${safe(t.cls) || '반'}_${safe(t.name) || '팀'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('결과 파일이 저장되었습니다.');
+  });
   $('#btn-review', card).addEventListener('click', () => {
     openModal({
       title: '핵심 개념 다시 보기',
@@ -404,30 +503,72 @@ function showResult() {
 
 /* ---------- 프롤로그 ---------- */
 let proIdx = 0;
+const proType = { timer: null, full: '', done: true };
+
 function runPrologue() {
   proIdx = 0;
   showScreen('prologue');
   renderPrologue();
 }
+function typeProDesc(text) {
+  const box = $('#pro-desc');
+  clearInterval(proType.timer);
+  proType.full = text;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { box.textContent = text; proType.done = true; return; }
+  proType.done = false;
+  box.textContent = '';
+  let i = 0;
+  proType.timer = setInterval(() => {
+    box.textContent = text.slice(0, ++i);
+    if (i % 3 === 0) Sound.tone(1200, 0.015, 'square', 0.012);
+    if (i >= text.length) { clearInterval(proType.timer); proType.done = true; }
+  }, 20);
+}
 function renderPrologue() {
   const sc = PROLOGUE[proIdx];
   $('#pro-step').textContent = sc.step;
+  $('#pro-icon').textContent = PRO_ICONS[proIdx] || '';
   $('#pro-title').textContent = sc.t;
-  $('#pro-desc').textContent = sc.d;
+  typeProDesc(sc.d);
   $('#pro-fx').className = '';
   $('#pro-fx').classList.add(sc.fx);
   $('#btn-pro-next').textContent = proIdx === PROLOGUE.length - 1 ? '탐사 시작!' : '다음';
 }
 function finishPrologue() {
+  clearInterval(proType.timer);
   state.prologueDone = true;
   saveGame();
+  aiSay(AI_LINES.boot);
   enterRoom(state.room && state.room !== 'final' ? state.room : 1);
 }
 
 /* ---------- 새 게임 / 이어하기 / 다시 시작 ---------- */
-function startNewGame() {
+function readTeamInputs() {
+  return {
+    cls: ($('#reg-class').value || '').trim().slice(0, 20),
+    name: ($('#reg-team').value || '').trim().slice(0, 24),
+  };
+}
+function validateTeam() {
+  const t = readTeamInputs();
+  const msg = $('#reg-msg');
+  if (!t.cls || !t.name) {
+    msg.textContent = '⚠ 반과 팀명을 입력해야 탐사를 시작할 수 있습니다. (대원 등록)';
+    msg.classList.remove('pop');
+    void msg.offsetWidth;
+    msg.classList.add('pop');
+    (!t.cls ? $('#reg-class') : $('#reg-team')).focus();
+    return null;
+  }
+  msg.textContent = '';
+  return t;
+}
+function startNewGame(team) {
   clearSave();
+  const keep = team || (state.team && state.team.name ? state.team : null);
   state = newState();
+  if (keep) state.team = keep;
   state.screen = 'prologue';
   saveGame();
   renderInventory();
@@ -484,6 +625,8 @@ function init() {
   renderInventory();
 
   $('#btn-newgame').addEventListener('click', () => {
+    const team = validateTeam();
+    if (!team) return;
     if (hasSavedGame()) {
       const body = el(`<div style="text-align:center">
         <p>저장된 게임이 있습니다. 새 게임을 시작하면 기존 기록이 삭제됩니다.</p>
@@ -492,12 +635,24 @@ function init() {
           <button type="button" class="btn btn-warn" data-a="yes">새 게임 시작</button>
         </div></div>`);
       $('[data-a=no]', body).addEventListener('click', () => closeModal());
-      $('[data-a=yes]', body).addEventListener('click', () => { closeModal(true); startNewGame(); });
+      $('[data-a=yes]', body).addEventListener('click', () => { closeModal(true); startNewGame(team); });
       openModal({ title: '새 게임', body });
     } else {
-      startNewGame();
+      startNewGame(team);
     }
   });
+  // 저장된 게임이 있으면 반·팀명 미리 채우기 + Enter로 시작
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved && saved.team) {
+        if (saved.team.cls) $('#reg-class').value = saved.team.cls;
+        if (saved.team.name) $('#reg-team').value = saved.team.name;
+      }
+    }
+  } catch (e) { /* noop */ }
+  $('#start-reg').addEventListener('submit', e => { e.preventDefault(); $('#btn-newgame').click(); });
   $('#btn-continue').addEventListener('click', continueGame);
   $('#btn-howto').addEventListener('click', openHowto);
   $('#btn-continue').disabled = !hasSavedGame();
@@ -518,19 +673,40 @@ function init() {
 
   $('#btn-pro-next').addEventListener('click', () => {
     Sound.click();
+    if (!proType.done) { // 타자기 진행 중이면 먼저 문장 완성
+      clearInterval(proType.timer);
+      $('#pro-desc').textContent = proType.full;
+      proType.done = true;
+      return;
+    }
     if (proIdx >= PROLOGUE.length - 1) finishPrologue();
     else { proIdx++; renderPrologue(); }
   });
   $('#btn-pro-skip').addEventListener('click', () => finishPrologue());
 
-  // 타이머(1초) + 자동 저장(15초)
+  // 타이머(1초) + 자동 저장(15초) + 시공간 안정도 하락(45초마다 1%)
   let tick = 0;
   setInterval(() => {
     if (state.screen === 'game' && !state.escaped) {
       tickTime();
       const t = $('#tb-time');
       if (t) t.textContent = fmtTime(state.playMs);
-      if (++tick % 15 === 0) saveGame();
+      tick++;
+      if (tick % 45 === 0) {
+        const before = state.stability;
+        state.stability = Math.max(10, state.stability - 1);
+        if (before !== state.stability) renderTopbar();
+        // 임계값을 처음 지날 때 관제 AI 경고 + 알림음
+        [75, 50, 25].forEach(th => {
+          if (before > th && state.stability <= th && !state.flags['stabWarn' + th]) {
+            state.flags['stabWarn' + th] = true;
+            aiSay(AI_LINES.stab[th]);
+            Sound.tone(520, 0.15, 'square', 0.05);
+            Sound.tone(392, 0.2, 'square', 0.05, 0.18);
+          }
+        });
+      }
+      if (tick % 15 === 0) saveGame();
     }
   }, 1000);
 

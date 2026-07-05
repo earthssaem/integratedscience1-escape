@@ -108,7 +108,7 @@ h1, h2, h3 { line-height: 1.3; }
 .tb-titles { display: flex; flex-direction: column; line-height: 1.2; }
 .tb-titles strong { font-size: 1rem; color: var(--glow); letter-spacing: 0.02em; }
 #tb-loc { font-size: 0.85rem; color: var(--text-dim); }
-.tb-mid { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 220px; }
+.tb-mid { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; flex-wrap: wrap; }
 .tb-progress {
   flex: 1;
   max-width: 260px;
@@ -1159,6 +1159,135 @@ h1, h2, h3 { line-height: 1.3; }
 .item-detail .id-status { display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 0.15em 0.7em; border-radius: 999px; background: #2b4a86; margin-bottom: 0.6rem; }
 .item-detail .id-desc { text-align: left; padding: 0.8rem 1rem; background: rgba(8,18,40,0.7); border-radius: 10px; border: 1px solid rgba(120,170,230,0.3); }
 
+/* ============================================================
+   몰입 요소: 대원 등록, 관제 AI, 안정도 게이지, 연출
+   ============================================================ */
+
+/* ---------- 대원 등록 (반·팀명) ---------- */
+.start-reg { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 0 0.4rem; }
+.reg-field { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; }
+.reg-field span { font-size: 0.78rem; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; }
+.reg-field input {
+  width: 190px;
+  min-height: 46px;
+  padding: 0 0.8em;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(5, 10, 24, 0.8);
+  border: 1.5px solid rgba(93, 205, 255, 0.4);
+  border-radius: 10px;
+}
+.reg-field input:focus-visible { outline: 3px solid var(--glow); outline-offset: 1px; }
+.reg-msg { min-height: 1.3em; margin: 0 0 0.6rem; font-size: 0.86rem; font-weight: 600; color: var(--warn); }
+.reg-msg.pop { animation: fb-pop 0.35s; }
+.tb-team {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b5ffe9;
+  padding: 0.15em 0.7em;
+  margin-left: 0.3rem;
+  border: 1px solid rgba(85, 230, 165, 0.45);
+  border-radius: 999px;
+  background: rgba(15, 60, 45, 0.5);
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 시공간 안정도 게이지 ---------- */
+.tb-stab { display: flex; align-items: center; gap: 6px; }
+.stab-label { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; }
+.stab-gauge {
+  width: 88px; height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 171, 82, 0.35);
+}
+#stab-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffd97a, #ff9b45); transition: width 0.5s; }
+.stab-gauge.danger #stab-fill { background: linear-gradient(90deg, #ff8a5f, #ff5f5f); animation: pulse-bg 0.9s infinite; }
+.stab-pct { font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--warn); min-width: 2.9em; }
+
+/* ---------- 관제 AI 교신 패널 ---------- */
+#comm-panel {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.5rem 0.9rem;
+  margin-bottom: 0.7rem;
+  min-height: 2.5em;
+  background: rgba(4, 10, 22, 0.9);
+  border: 1px solid rgba(85, 230, 200, 0.3);
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+.comm-tag {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #06251f;
+  background: linear-gradient(135deg, #59f2c8, #35c3ff);
+  padding: 0.15em 0.6em;
+  border-radius: 6px;
+}
+#comm-text { color: #c9f6e8; }
+.comm-cursor { color: var(--accent); animation: cursor-blink 1s steps(1) infinite; }
+@keyframes cursor-blink { 50% { opacity: 0; } }
+
+/* ---------- 방 몰입 연출 ---------- */
+.room-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 4px);
+}
+.room-obj.st-done { border-color: rgba(85, 230, 165, 0.65); box-shadow: 0 0 14px rgba(85, 230, 165, 0.22); }
+.room-obj.st-done .obj-icon { color: var(--ok); }
+#fx-overlay.warp-mode { background: transparent; pointer-events: none; }
+.warp {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(190, 245, 255, 0.9), rgba(82, 216, 255, 0.35) 40%, transparent 70%);
+  animation: warp-out 0.6s ease-out forwards;
+}
+@keyframes warp-out { from { opacity: 1; transform: scale(0.6); } to { opacity: 0; transform: scale(1.7); } }
+
+/* ---------- 프롤로그 아이콘 ---------- */
+.pro-icon { font-size: 2.6rem; display: block; margin: 0.3rem 0 0.2rem; }
+
+/* ---------- 결과 보고서 / 등급 ---------- */
+.rank-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 1.8rem;
+  margin: 0.3rem 0 0.6rem;
+  border: 2px solid var(--ok);
+  border-radius: 14px;
+  background: rgba(15, 75, 55, 0.35);
+  box-shadow: 0 0 24px rgba(85, 230, 165, 0.25);
+}
+.rank-badge .rank-letter { font-size: 2.8rem; font-weight: 900; line-height: 1.1; color: #b5ffe9; text-shadow: 0 0 18px rgba(85, 230, 165, 0.85); }
+.rank-badge .rank-k { font-size: 0.8rem; color: var(--text-dim); }
+.report-box {
+  width: 100%;
+  min-height: 170px;
+  margin: 0.6rem 0;
+  padding: 0.8rem;
+  font: 0.83rem/1.55 ui-monospace, Consolas, "Courier New", monospace;
+  color: #d7f3ff;
+  background: #04101d;
+  border: 1px solid rgba(93, 205, 255, 0.35);
+  border-radius: 10px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
 /* ---------- 접근성: 모션 감소 ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1200,4 +1329,11 @@ h1, h2, h3 { line-height: 1.3; }
   .pro-btns { flex-direction: column-reverse; }
   .start-btns { flex-direction: column; }
   .start-btns .btn { width: 100%; }
+  .start-reg { flex-direction: column; align-items: stretch; }
+  .reg-field, .reg-field input { width: 100%; }
+  .stab-label { display: none; }
+  .stab-gauge { width: 64px; }
+  .tb-progress { max-width: 120px; }
+  .tb-team { display: none; }
+  #comm-panel { font-size: 0.87rem; }
 }

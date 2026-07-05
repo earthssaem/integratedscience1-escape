@@ -118,7 +118,7 @@ h1, h2, h3 { line-height: 1.3; }
 .tb-titles { display: flex; flex-direction: column; line-height: 1.2; }
 .tb-titles strong { font-size: 1rem; color: var(--glow); letter-spacing: 0.02em; }
 #tb-loc { font-size: 0.85rem; color: var(--text-dim); }
-.tb-mid { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 220px; }
+.tb-mid { display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 0; flex-wrap: wrap; }
 .tb-progress {
   flex: 1;
   max-width: 260px;
@@ -1169,6 +1169,135 @@ h1, h2, h3 { line-height: 1.3; }
 .item-detail .id-status { display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 0.15em 0.7em; border-radius: 999px; background: #2b4a86; margin-bottom: 0.6rem; }
 .item-detail .id-desc { text-align: left; padding: 0.8rem 1rem; background: rgba(8,18,40,0.7); border-radius: 10px; border: 1px solid rgba(120,170,230,0.3); }
 
+/* ============================================================
+   몰입 요소: 대원 등록, 관제 AI, 안정도 게이지, 연출
+   ============================================================ */
+
+/* ---------- 대원 등록 (반·팀명) ---------- */
+.start-reg { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 0 0 0.4rem; }
+.reg-field { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; }
+.reg-field span { font-size: 0.78rem; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; }
+.reg-field input {
+  width: 190px;
+  min-height: 46px;
+  padding: 0 0.8em;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: rgba(5, 10, 24, 0.8);
+  border: 1.5px solid rgba(93, 205, 255, 0.4);
+  border-radius: 10px;
+}
+.reg-field input:focus-visible { outline: 3px solid var(--glow); outline-offset: 1px; }
+.reg-msg { min-height: 1.3em; margin: 0 0 0.6rem; font-size: 0.86rem; font-weight: 600; color: var(--warn); }
+.reg-msg.pop { animation: fb-pop 0.35s; }
+.tb-team {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b5ffe9;
+  padding: 0.15em 0.7em;
+  margin-left: 0.3rem;
+  border: 1px solid rgba(85, 230, 165, 0.45);
+  border-radius: 999px;
+  background: rgba(15, 60, 45, 0.5);
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 시공간 안정도 게이지 ---------- */
+.tb-stab { display: flex; align-items: center; gap: 6px; }
+.stab-label { font-size: 0.7rem; color: var(--text-dim); white-space: nowrap; }
+.stab-gauge {
+  width: 88px; height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 171, 82, 0.35);
+}
+#stab-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffd97a, #ff9b45); transition: width 0.5s; }
+.stab-gauge.danger #stab-fill { background: linear-gradient(90deg, #ff8a5f, #ff5f5f); animation: pulse-bg 0.9s infinite; }
+.stab-pct { font-size: 0.78rem; font-variant-numeric: tabular-nums; color: var(--warn); min-width: 2.9em; }
+
+/* ---------- 관제 AI 교신 패널 ---------- */
+#comm-panel {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.5rem 0.9rem;
+  margin-bottom: 0.7rem;
+  min-height: 2.5em;
+  background: rgba(4, 10, 22, 0.9);
+  border: 1px solid rgba(85, 230, 200, 0.3);
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+.comm-tag {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #06251f;
+  background: linear-gradient(135deg, #59f2c8, #35c3ff);
+  padding: 0.15em 0.6em;
+  border-radius: 6px;
+}
+#comm-text { color: #c9f6e8; }
+.comm-cursor { color: var(--accent); animation: cursor-blink 1s steps(1) infinite; }
+@keyframes cursor-blink { 50% { opacity: 0; } }
+
+/* ---------- 방 몰입 연출 ---------- */
+.room-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 4px);
+}
+.room-obj.st-done { border-color: rgba(85, 230, 165, 0.65); box-shadow: 0 0 14px rgba(85, 230, 165, 0.22); }
+.room-obj.st-done .obj-icon { color: var(--ok); }
+#fx-overlay.warp-mode { background: transparent; pointer-events: none; }
+.warp {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(190, 245, 255, 0.9), rgba(82, 216, 255, 0.35) 40%, transparent 70%);
+  animation: warp-out 0.6s ease-out forwards;
+}
+@keyframes warp-out { from { opacity: 1; transform: scale(0.6); } to { opacity: 0; transform: scale(1.7); } }
+
+/* ---------- 프롤로그 아이콘 ---------- */
+.pro-icon { font-size: 2.6rem; display: block; margin: 0.3rem 0 0.2rem; }
+
+/* ---------- 결과 보고서 / 등급 ---------- */
+.rank-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 1.8rem;
+  margin: 0.3rem 0 0.6rem;
+  border: 2px solid var(--ok);
+  border-radius: 14px;
+  background: rgba(15, 75, 55, 0.35);
+  box-shadow: 0 0 24px rgba(85, 230, 165, 0.25);
+}
+.rank-badge .rank-letter { font-size: 2.8rem; font-weight: 900; line-height: 1.1; color: #b5ffe9; text-shadow: 0 0 18px rgba(85, 230, 165, 0.85); }
+.rank-badge .rank-k { font-size: 0.8rem; color: var(--text-dim); }
+.report-box {
+  width: 100%;
+  min-height: 170px;
+  margin: 0.6rem 0;
+  padding: 0.8rem;
+  font: 0.83rem/1.55 ui-monospace, Consolas, "Courier New", monospace;
+  color: #d7f3ff;
+  background: #04101d;
+  border: 1px solid rgba(93, 205, 255, 0.35);
+  border-radius: 10px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
 /* ---------- 접근성: 모션 감소 ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1210,6 +1339,13 @@ h1, h2, h3 { line-height: 1.3; }
   .pro-btns { flex-direction: column-reverse; }
   .start-btns { flex-direction: column; }
   .start-btns .btn { width: 100%; }
+  .start-reg { flex-direction: column; align-items: stretch; }
+  .reg-field, .reg-field input { width: 100%; }
+  .stab-label { display: none; }
+  .stab-gauge { width: 64px; }
+  .tb-progress { max-width: 120px; }
+  .tb-team { display: none; }
+  #comm-panel { font-size: 0.87rem; }
 }
 
 </style>
@@ -1229,6 +1365,7 @@ h1, h2, h3 { line-height: 1.3; }
         <strong>138억 년의 여정</strong>
         <span id="tb-loc">-</span>
       </div>
+      <span id="tb-team" class="tb-team hidden" aria-label="반과 팀명"></span>
     </div>
     <div class="tb-mid">
       <div class="tb-progress" role="img" aria-label="현재 방 진행률">
@@ -1236,6 +1373,11 @@ h1, h2, h3 { line-height: 1.3; }
       </div>
       <span id="tb-progress-text">0/5</span>
       <div id="tb-chips" aria-label="획득한 시간 좌표 칩"></div>
+      <div class="tb-stab" role="img" aria-label="시공간 안정도">
+        <span class="stab-label">시공간 안정도</span>
+        <div class="stab-gauge"><div id="stab-fill"></div></div>
+        <span class="stab-pct" id="stab-pct">100%</span>
+      </div>
     </div>
     <div class="tb-right">
       <span id="tb-time" aria-label="플레이 시간">00:00</span>
@@ -1259,9 +1401,16 @@ h1, h2, h3 { line-height: 1.3; }
           <li><strong>권장 인원</strong> 2~3명 (한 팀)</li>
           <li><strong>예상 시간</strong> 35~40분</li>
         </ul>
+        <form class="start-reg" id="start-reg" autocomplete="off" novalidate>
+          <label class="reg-field"><span>반</span>
+            <input id="reg-class" type="text" maxlength="20" placeholder="예: 1학년 3반" autocomplete="off" enterkeyhint="next"></label>
+          <label class="reg-field"><span>팀명</span>
+            <input id="reg-team" type="text" maxlength="24" placeholder="예: 빅뱅탐험대" autocomplete="off" enterkeyhint="go"></label>
+        </form>
+        <p id="reg-msg" class="reg-msg" role="alert"></p>
         <div class="start-btns">
           <button id="btn-continue" class="btn btn-big" type="button" disabled>이어하기</button>
-          <button id="btn-newgame" class="btn btn-big btn-primary" type="button">새 게임</button>
+          <button id="btn-newgame" class="btn btn-big btn-primary" type="button">새 게임 시작</button>
           <button id="btn-howto" class="btn btn-big btn-ghost" type="button">조작 방법</button>
         </div>
         <p class="start-foot">범위: 우주 초기의 원소 · 별의 진화와 원소 생성 · 지구시스템 · 판 구조론</p>
@@ -1273,6 +1422,7 @@ h1, h2, h3 { line-height: 1.3; }
       <div id="pro-fx" aria-hidden="true"></div>
       <div class="pro-box">
         <p id="pro-step" class="pro-step"></p>
+        <span id="pro-icon" class="pro-icon" aria-hidden="true"></span>
         <h2 id="pro-title"></h2>
         <p id="pro-desc"></p>
         <div class="pro-btns">
@@ -1289,6 +1439,10 @@ h1, h2, h3 { line-height: 1.3; }
           <div id="objective-bar">
             <span class="obj-tag">현재 목표</span>
             <span id="objective-text"></span>
+          </div>
+          <div id="comm-panel" aria-live="polite" aria-label="관제 AI 교신">
+            <span class="comm-tag">K.O.S.M.O</span>
+            <span id="comm-text"></span><span class="comm-cursor" aria-hidden="true">▊</span>
           </div>
           <div id="room-view"></div>
         </div>
@@ -1644,6 +1798,56 @@ const ROOM_CLEAR = {
   },
 };
 
+/* ---------- 프롤로그 장면 아이콘 ---------- */
+const PRO_ICONS = ['🧪', '⚡', '🚨', '🌀', '💠', '🌑', '🌌'];
+
+/* ---------- 관제 AI 「K.O.S.M.O.」 교신 대사 ---------- */
+const AI_LINES = {
+  boot: '관제 AI K.O.S.M.O. 접속 완료. 대원들, 들리나? 지금부터 내가 귀환을 지원한다.',
+  room: {
+    1: '여긴 초기 우주 관측 구역. 분광 분석기부터 살펴보자 — 빛이 모든 단서를 쥐고 있다.',
+    2: '성운 구역 진입. 별이 태어나는 곳이다. 흩어진 필름 조각부터 회수하자.',
+    3: '지구시스템 관제실이다. 끊어진 권역 회로를 복구해야 한다. 중앙의 지구 모형을 조사해 봐.',
+    4: '마지막 구역, 판 구조 제어실. 발밑의 맨틀이 아직 뜨겁다. 지구 단면부터 조립하자.',
+  },
+  solve: {
+    'r1-spectrum': '분광 분석기 복구! 별빛의 검은 선이 원소의 지문이라는 걸 증명했군.',
+    'r1-timeline': '우주 시계 재가동. 쿼크에서 원자까지 — 순서가 완벽하다.',
+    'r1-nucleo': '질량비 3:1 확인. 계산까지 정확하다. 저쪽 관측 화면이 깨어난다.',
+    'r1-light': '우주 배경 복사 수신! 138억 년 전의 빛이 우리에게 문을 열어 줬다.',
+    'r1-door': '패드락 해제. 첫 번째 좌표 칩 확보!',
+    'r2-film': '필름 복원 완료. 성운 속에서 원시별이 눈을 떴다.',
+    'r2-fusion': '핵융합 점화! 수소 4개가 헬륨이 되며 에너지가 쏟아진다.',
+    'r2-starmass': '정확한 분석이다. 별은 질량에 따라 만들 수 있는 원소가 다르지.',
+    'r2-nova': '초신성 기록 복구. 우리 몸의 무거운 원소도 저 폭발에서 왔다.',
+    'r2-door': '복합 자물쇠 해제. 두 번째 칩 확보!',
+    'r3-spheres': '네 권역 분류 완료. 지구 모형에 빛이 돌기 시작한다.',
+    'r3-energy': '세 에너지원 연결 완료. 관제실 전력 정상화.',
+    'r3-water': '물 순환 재가동. 저 작은 물방울 하나가 날씨를 만든다.',
+    'r3-carbon': '탄소 캡슐 귀환. 지나간 권역 순서를 기록해 뒀다 — 출구 자물쇠에 쓰일 거다.',
+    'r3-door': '아이콘 자물쇠 해제. 세 번째 칩이다!',
+    'r4-layers': '암석권·연약권 복구 확인. 맨틀 대류가 다시 흐른다.',
+    'r4-motion': '판 이동 방향 설정 완료. 자석 보관함이 열렸다.',
+    'r4-landform': '지형 매칭 완료. 분포 지도에 전원이 들어온다.',
+    'r4-map': '판 경계 확인! 지진대가 경계를 따라 빛나고 있다.',
+    'r4-door': '슬라이더 자물쇠 해제. 마지막 칩이 우리 손에!',
+    'final-chips': '좌표 칩 배열 승인. 이제 최종 좌표만 남았다.',
+  },
+  wrong: [
+    '괜찮다, 실패도 데이터다. 피드백을 다시 읽어 보자.',
+    '침착하게. 개념을 하나씩 다시 짚어 봐.',
+    '아깝다! 막히면 힌트 버튼도 전략이다.',
+    '오답 기록됨. 하지만 시간은 아직 우리 편이다.',
+  ],
+  stab: {
+    75: '주의: 시공간 안정도 75% 이하. 서두르되, 정확하게.',
+    50: '경고: 안정도 50%. 오답이 늘수록 좌표가 흔들린다!',
+    25: '위험: 안정도 25%! 귀환 좌표가 요동친다. 집중해라, 대원들!',
+  },
+  final: '모든 칩 확보 확인. 타임머신 콘솔로 — 우주의 역사 순서를 기억해라.',
+  escape: '좌표 승인. 잘했다, 대원들. 이제 집으로 돌아가자.',
+};
+
 const FINAL_MESSAGE = [
   '초기 우주에서 만들어진 원소는 별의 재료가 되었습니다.',
   '별에서 만들어진 원소는 지구와 생명체를 이루었습니다.',
@@ -1739,7 +1943,9 @@ function newState() {
     hintLv: {},             // { puzzleId: 0~3 }
     hintCount: 0,
     wrongCount: 0,
-    settings: { sound: false },
+    team: { cls: '', name: '' }, // 반 · 팀명
+    stability: 100,         // 시공간 안정도(%) — 진행을 막지 않는 긴장감 요소
+    settings: { sound: true },
     playMs: 0,
     lastTick: Date.now(),
     escaped: false,
@@ -1771,7 +1977,9 @@ function loadGame() {
     const s = JSON.parse(raw);
     if (!s || typeof s !== 'object' || !s.solved) return false;
     state = Object.assign(newState(), s);
-    state.settings = Object.assign({ sound: false }, s.settings);
+    state.settings = Object.assign({ sound: true }, s.settings);
+    state.team = Object.assign({ cls: '', name: '' }, s.team);
+    if (typeof state.stability !== 'number') state.stability = 100;
     state.lastTick = Date.now();
     return true;
   } catch (e) { return false; }
@@ -1784,9 +1992,44 @@ function isSolved(id) { return !!state.solved[id]; }
 function markSolved(pid) {
   if (state.solved[pid]) return;
   state.solved[pid] = true;
+  state.stability = Math.min(100, state.stability + 3); // 복구 성공 → 안정도 소폭 회복
   saveGame();
   renderRoom();
   renderTopbar();
+  if (typeof AI_LINES !== 'undefined' && AI_LINES.solve[pid]) aiSay(AI_LINES.solve[pid]);
+}
+
+/* ---------- 관제 AI 「K.O.S.M.O.」 교신 (타자기 효과) ---------- */
+const Comm = { queue: [], busy: false, typeTimer: null, waitTimer: null };
+
+function aiSay(msg) {
+  if (!msg) return;
+  Comm.queue.push(msg);
+  if (!Comm.busy) commNext();
+}
+function commNext() {
+  const box = $('#comm-text');
+  const msg = Comm.queue.shift();
+  if (!box || msg == null) { Comm.busy = false; return; }
+  Comm.busy = true;
+  Sound.tone(880, 0.05, 'sine', 0.03);
+  clearInterval(Comm.typeTimer);
+  clearTimeout(Comm.waitTimer);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    box.textContent = msg;
+    Comm.waitTimer = setTimeout(commNext, 1800);
+    return;
+  }
+  box.textContent = '';
+  let i = 0;
+  Comm.typeTimer = setInterval(() => {
+    box.textContent = msg.slice(0, ++i);
+    if (i >= msg.length) {
+      clearInterval(Comm.typeTimer);
+      Comm.waitTimer = setTimeout(commNext, 2400);
+    }
+  }, 18);
 }
 
 /* ---------- 아이템 / 인벤토리 ---------- */
@@ -1980,8 +2223,13 @@ function openHintPopup(pid) {
 /* ---------- 정답/오답 공통 ---------- */
 function recordWrong(msg, box) {
   state.wrongCount++;
+  state.stability = Math.max(10, state.stability - 2); // 오답 → 안정도 하락 (10% 밑으로는 안 내려감)
   saveGame();
   Sound.error();
+  renderTopbar();
+  if (typeof AI_LINES !== 'undefined' && !Comm.busy) {
+    aiSay(AI_LINES.wrong[Math.floor(Math.random() * AI_LINES.wrong.length)]);
+  }
   if (box) {
     box.className = 'feedback fb-err';
     box.innerHTML = `<span class="fb-icon" aria-hidden="true">✖</span><div><strong>다시 생각해 보세요</strong><p>${esc(msg)}</p></div>`;
@@ -3966,9 +4214,13 @@ const ROOMS = {
 function sceneArt(theme) {
   let seed = theme === 'r1' ? 7 : theme === 'r2' ? 13 : theme === 'r3' ? 21 : theme === 'final' ? 31 : 29;
   const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let stars = '';
   for (let i = 0; i < 60; i++) {
-    stars += `<circle cx="${(rnd() * 1200).toFixed(0)}" cy="${(rnd() * 620).toFixed(0)}" r="${(0.6 + rnd() * 1.6).toFixed(1)}" fill="#cfe9ff" opacity="${(0.2 + rnd() * 0.6).toFixed(2)}"/>`;
+    const op = (0.2 + rnd() * 0.6).toFixed(2);
+    const twinkle = (!reduceMotion && i % 4 === 0)
+      ? `<animate attributeName="opacity" values="${op};0.05;${op}" dur="${(2 + rnd() * 4).toFixed(1)}s" repeatCount="indefinite"/>` : '';
+    stars += `<circle cx="${(rnd() * 1200).toFixed(0)}" cy="${(rnd() * 620).toFixed(0)}" r="${(0.6 + rnd() * 1.6).toFixed(1)}" fill="#cfe9ff" opacity="${op}">${twinkle}</circle>`;
   }
   let extra = '';
   if (theme === 'r1') {
@@ -4030,6 +4282,19 @@ function renderTopbar() {
     chipsBox.appendChild(el(`<span class="chip-dot ${hasItem(c) ? 'got' : ''}" title="시간 좌표 칩 ${i + 1}">${i + 1}</span>`));
   });
   $('#tb-time').textContent = fmtTime(state.playMs);
+  // 시공간 안정도 게이지
+  const stab = Math.round(state.stability);
+  $('#stab-fill').style.width = `${stab}%`;
+  $('#stab-pct').textContent = `${stab}%`;
+  $('.stab-gauge').classList.toggle('danger', stab <= 30);
+  // 반 · 팀명
+  const teamEl = $('#tb-team');
+  if (state.team && (state.team.cls || state.team.name)) {
+    teamEl.textContent = `🚀 ${[state.team.cls, state.team.name].filter(Boolean).join(' · ')}`;
+    teamEl.classList.remove('hidden');
+  } else {
+    teamEl.classList.add('hidden');
+  }
   const sb = $('#btn-sound');
   sb.textContent = state.settings.sound ? '🔊 소리 켜짐' : '🔇 소리 꺼짐';
   sb.setAttribute('aria-pressed', state.settings.sound ? 'true' : 'false');
@@ -4113,14 +4378,28 @@ function renderRoom() {
   renderTopbar();
 }
 
+function warpFlash() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ov = $('#fx-overlay');
+  ov.classList.remove('hidden');
+  ov.classList.add('warp-mode');
+  ov.innerHTML = '<div class="warp"></div>';
+  setTimeout(() => {
+    ov.classList.add('hidden');
+    ov.classList.remove('warp-mode');
+    ov.innerHTML = '';
+  }, 620);
+}
+
 function enterRoom(r) {
   state.room = r;
   saveGame();
   showScreen('game');
   renderRoom();
   renderInventory();
-  if (r === 'final') toast('타임머신 앞에 도착했습니다.');
-  else toast(`${ROOMS[r].name}에 입장했습니다.`);
+  warpFlash();
+  if (r === 'final') { toast('타임머신 앞에 도착했습니다.'); aiSay(AI_LINES.final); }
+  else { toast(`${ROOMS[r].name}에 입장했습니다.`); aiSay(AI_LINES.room[r]); }
 }
 
 /* ---------- 방 통과 연출 ---------- */
@@ -4231,14 +4510,52 @@ function playEscape() {
   }, reduce ? 250 : 2700);
 }
 
+/* ---------- 탐사 등급 · 결과 보고서 ---------- */
+function calcRank() {
+  const min = state.playMs / 60000;
+  let score = 100 - state.wrongCount * 3 - state.hintCount * 4 - Math.max(0, min - 35) * 1.5;
+  score = Math.max(0, Math.round(score));
+  const rank = score >= 90 ? 'S' : score >= 75 ? 'A' : score >= 60 ? 'B' : 'C';
+  return { score, rank };
+}
+function buildReport() {
+  const { score, rank } = calcRank();
+  const t = state.team || { cls: '', name: '' };
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const when = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const payload = {
+    c: t.cls, t: t.name, ms: Math.round(state.playMs),
+    h: state.hintCount, w: state.wrongCount,
+    st: Math.round(state.stability), s: score, r: rank, d: when,
+  };
+  const json = JSON.stringify(payload);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const sum = [...json].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 9973;
+  const code = (b64 + '.' + sum.toString(36).toUpperCase()).replace(/(.{24})/g, '$1\n');
+  const text = [
+    '[통합과학 방탈출 · 138억 년의 여정] 탈출 성공 보고서',
+    `반: ${t.cls || '-'} / 팀명: ${t.name || '-'}`,
+    `탈출 완료: ${when}`,
+    `플레이 시간: ${fmtTime(state.playMs)} | 힌트: ${state.hintCount}회 | 오답: ${state.wrongCount}회 | 시공간 안정도: ${Math.round(state.stability)}%`,
+    `탐사 평점: ${score}점 / 탐사 등급: ${rank}`,
+    '── 검증 코드 (수정 금지) ──',
+    code,
+  ].join('\n');
+  return { text, score, rank };
+}
+
 /* ---------- 결과 화면 ---------- */
 function showResult() {
   const sec = $('#screen-result');
   sec.innerHTML = '';
+  const report = buildReport();
+  const t = state.team || { cls: '', name: '' };
   const card = el(`<div class="result-card">
     <p class="start-kicker">MISSION COMPLETE</p>
     <h2>🎉 탈출 성공!</h2>
-    <p>138억 년의 여정을 지나 현재의 통합과학 교실로 돌아왔습니다.</p>
+    <p>${t.name ? `<strong>${esc([t.cls, t.name].filter(Boolean).join(' · '))}</strong> 팀, ` : ''}138억 년의 여정을 지나 현재의 통합과학 교실로 돌아왔습니다.</p>
+    <div class="rank-badge"><span class="rank-letter">${esc(report.rank)}</span><span class="rank-k">탐사 등급 · ${report.score}점</span></div>
     <div class="result-story">${FINAL_MESSAGE.map(m => `<p>${esc(m)}</p>`).join('')}</div>
     <div class="result-chips">
       <span class="result-chip">칩① 38</span><span class="result-chip">칩② 4</span>
@@ -4248,7 +4565,14 @@ function showResult() {
       <div class="stat"><span class="stat-v">${esc(fmtTime(state.playMs))}</span><span class="stat-k">총 플레이 시간</span></div>
       <div class="stat"><span class="stat-v">${state.hintCount}</span><span class="stat-k">사용한 힌트</span></div>
       <div class="stat"><span class="stat-v">${state.wrongCount}</span><span class="stat-k">오답 횟수</span></div>
-      <div class="stat"><span class="stat-v">4/4</span><span class="stat-k">시간 좌표 칩</span></div>
+      <div class="stat"><span class="stat-v">${Math.round(state.stability)}%</span><span class="stat-k">시공간 안정도</span></div>
+    </div>
+    <p style="text-align:left;margin:0.8rem 0 0.2rem"><strong>📤 결과 제출</strong>
+      <span class="puzzle-note" style="display:block">아래 보고서를 복사하거나 파일로 저장해 선생님께 제출하세요.</span></p>
+    <textarea id="report-text" class="report-box" readonly aria-label="탈출 결과 보고서"></textarea>
+    <div class="result-btns" style="margin-bottom:0.9rem">
+      <button type="button" class="btn" id="btn-copy-report">📋 보고서 복사</button>
+      <button type="button" class="btn" id="btn-save-report">💾 파일로 저장</button>
     </div>
     <div class="result-btns">
       <button type="button" class="btn btn-big" id="btn-review">📘 핵심 개념 다시 보기</button>
@@ -4256,6 +4580,29 @@ function showResult() {
     </div>
   </div>`);
   sec.appendChild(card);
+  $('#report-text', card).value = report.text;
+  $('#btn-copy-report', card).addEventListener('click', async () => {
+    const ta = $('#report-text', card);
+    try {
+      await navigator.clipboard.writeText(ta.value);
+      toast('보고서가 복사되었습니다. 선생님께 제출하세요!');
+    } catch (e) {
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); toast('보고서가 복사되었습니다.'); }
+      catch (e2) { toast('자동 복사가 안 되는 환경입니다. 텍스트를 길게 눌러 직접 복사하세요.'); }
+    }
+  });
+  $('#btn-save-report', card).addEventListener('click', () => {
+    const blob = new Blob([$('#report-text', card).value], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const safe = (s) => (s || '').replace(/[\\/:*?"<>|\s]+/g, '_');
+    a.download = `방탈출결과_${safe(t.cls) || '반'}_${safe(t.name) || '팀'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('결과 파일이 저장되었습니다.');
+  });
   $('#btn-review', card).addEventListener('click', () => {
     openModal({
       title: '핵심 개념 다시 보기',
@@ -4272,30 +4619,72 @@ function showResult() {
 
 /* ---------- 프롤로그 ---------- */
 let proIdx = 0;
+const proType = { timer: null, full: '', done: true };
+
 function runPrologue() {
   proIdx = 0;
   showScreen('prologue');
   renderPrologue();
 }
+function typeProDesc(text) {
+  const box = $('#pro-desc');
+  clearInterval(proType.timer);
+  proType.full = text;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { box.textContent = text; proType.done = true; return; }
+  proType.done = false;
+  box.textContent = '';
+  let i = 0;
+  proType.timer = setInterval(() => {
+    box.textContent = text.slice(0, ++i);
+    if (i % 3 === 0) Sound.tone(1200, 0.015, 'square', 0.012);
+    if (i >= text.length) { clearInterval(proType.timer); proType.done = true; }
+  }, 20);
+}
 function renderPrologue() {
   const sc = PROLOGUE[proIdx];
   $('#pro-step').textContent = sc.step;
+  $('#pro-icon').textContent = PRO_ICONS[proIdx] || '';
   $('#pro-title').textContent = sc.t;
-  $('#pro-desc').textContent = sc.d;
+  typeProDesc(sc.d);
   $('#pro-fx').className = '';
   $('#pro-fx').classList.add(sc.fx);
   $('#btn-pro-next').textContent = proIdx === PROLOGUE.length - 1 ? '탐사 시작!' : '다음';
 }
 function finishPrologue() {
+  clearInterval(proType.timer);
   state.prologueDone = true;
   saveGame();
+  aiSay(AI_LINES.boot);
   enterRoom(state.room && state.room !== 'final' ? state.room : 1);
 }
 
 /* ---------- 새 게임 / 이어하기 / 다시 시작 ---------- */
-function startNewGame() {
+function readTeamInputs() {
+  return {
+    cls: ($('#reg-class').value || '').trim().slice(0, 20),
+    name: ($('#reg-team').value || '').trim().slice(0, 24),
+  };
+}
+function validateTeam() {
+  const t = readTeamInputs();
+  const msg = $('#reg-msg');
+  if (!t.cls || !t.name) {
+    msg.textContent = '⚠ 반과 팀명을 입력해야 탐사를 시작할 수 있습니다. (대원 등록)';
+    msg.classList.remove('pop');
+    void msg.offsetWidth;
+    msg.classList.add('pop');
+    (!t.cls ? $('#reg-class') : $('#reg-team')).focus();
+    return null;
+  }
+  msg.textContent = '';
+  return t;
+}
+function startNewGame(team) {
   clearSave();
+  const keep = team || (state.team && state.team.name ? state.team : null);
   state = newState();
+  if (keep) state.team = keep;
   state.screen = 'prologue';
   saveGame();
   renderInventory();
@@ -4352,6 +4741,8 @@ function init() {
   renderInventory();
 
   $('#btn-newgame').addEventListener('click', () => {
+    const team = validateTeam();
+    if (!team) return;
     if (hasSavedGame()) {
       const body = el(`<div style="text-align:center">
         <p>저장된 게임이 있습니다. 새 게임을 시작하면 기존 기록이 삭제됩니다.</p>
@@ -4360,12 +4751,24 @@ function init() {
           <button type="button" class="btn btn-warn" data-a="yes">새 게임 시작</button>
         </div></div>`);
       $('[data-a=no]', body).addEventListener('click', () => closeModal());
-      $('[data-a=yes]', body).addEventListener('click', () => { closeModal(true); startNewGame(); });
+      $('[data-a=yes]', body).addEventListener('click', () => { closeModal(true); startNewGame(team); });
       openModal({ title: '새 게임', body });
     } else {
-      startNewGame();
+      startNewGame(team);
     }
   });
+  // 저장된 게임이 있으면 반·팀명 미리 채우기 + Enter로 시작
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved && saved.team) {
+        if (saved.team.cls) $('#reg-class').value = saved.team.cls;
+        if (saved.team.name) $('#reg-team').value = saved.team.name;
+      }
+    }
+  } catch (e) { /* noop */ }
+  $('#start-reg').addEventListener('submit', e => { e.preventDefault(); $('#btn-newgame').click(); });
   $('#btn-continue').addEventListener('click', continueGame);
   $('#btn-howto').addEventListener('click', openHowto);
   $('#btn-continue').disabled = !hasSavedGame();
@@ -4386,19 +4789,40 @@ function init() {
 
   $('#btn-pro-next').addEventListener('click', () => {
     Sound.click();
+    if (!proType.done) { // 타자기 진행 중이면 먼저 문장 완성
+      clearInterval(proType.timer);
+      $('#pro-desc').textContent = proType.full;
+      proType.done = true;
+      return;
+    }
     if (proIdx >= PROLOGUE.length - 1) finishPrologue();
     else { proIdx++; renderPrologue(); }
   });
   $('#btn-pro-skip').addEventListener('click', () => finishPrologue());
 
-  // 타이머(1초) + 자동 저장(15초)
+  // 타이머(1초) + 자동 저장(15초) + 시공간 안정도 하락(45초마다 1%)
   let tick = 0;
   setInterval(() => {
     if (state.screen === 'game' && !state.escaped) {
       tickTime();
       const t = $('#tb-time');
       if (t) t.textContent = fmtTime(state.playMs);
-      if (++tick % 15 === 0) saveGame();
+      tick++;
+      if (tick % 45 === 0) {
+        const before = state.stability;
+        state.stability = Math.max(10, state.stability - 1);
+        if (before !== state.stability) renderTopbar();
+        // 임계값을 처음 지날 때 관제 AI 경고 + 알림음
+        [75, 50, 25].forEach(th => {
+          if (before > th && state.stability <= th && !state.flags['stabWarn' + th]) {
+            state.flags['stabWarn' + th] = true;
+            aiSay(AI_LINES.stab[th]);
+            Sound.tone(520, 0.15, 'square', 0.05);
+            Sound.tone(392, 0.2, 'square', 0.05, 0.18);
+          }
+        });
+      }
+      if (tick % 15 === 0) saveGame();
     }
   }, 1000);
 

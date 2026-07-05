@@ -23,6 +23,7 @@
         <strong>138억 년의 여정</strong>
         <span id="tb-loc">-</span>
       </div>
+      <span id="tb-team" class="tb-team hidden" aria-label="반과 팀명"></span>
     </div>
     <div class="tb-mid">
       <div class="tb-progress" role="img" aria-label="현재 방 진행률">
@@ -30,6 +31,11 @@
       </div>
       <span id="tb-progress-text">0/5</span>
       <div id="tb-chips" aria-label="획득한 시간 좌표 칩"></div>
+      <div class="tb-stab" role="img" aria-label="시공간 안정도">
+        <span class="stab-label">시공간 안정도</span>
+        <div class="stab-gauge"><div id="stab-fill"></div></div>
+        <span class="stab-pct" id="stab-pct">100%</span>
+      </div>
     </div>
     <div class="tb-right">
       <span id="tb-time" aria-label="플레이 시간">00:00</span>
@@ -53,9 +59,16 @@
           <li><strong>권장 인원</strong> 2~3명 (한 팀)</li>
           <li><strong>예상 시간</strong> 35~40분</li>
         </ul>
+        <form class="start-reg" id="start-reg" autocomplete="off" novalidate>
+          <label class="reg-field"><span>반</span>
+            <input id="reg-class" type="text" maxlength="20" placeholder="예: 1학년 3반" autocomplete="off" enterkeyhint="next"></label>
+          <label class="reg-field"><span>팀명</span>
+            <input id="reg-team" type="text" maxlength="24" placeholder="예: 빅뱅탐험대" autocomplete="off" enterkeyhint="go"></label>
+        </form>
+        <p id="reg-msg" class="reg-msg" role="alert"></p>
         <div class="start-btns">
           <button id="btn-continue" class="btn btn-big" type="button" disabled>이어하기</button>
-          <button id="btn-newgame" class="btn btn-big btn-primary" type="button">새 게임</button>
+          <button id="btn-newgame" class="btn btn-big btn-primary" type="button">새 게임 시작</button>
           <button id="btn-howto" class="btn btn-big btn-ghost" type="button">조작 방법</button>
         </div>
         <p class="start-foot">범위: 우주 초기의 원소 · 별의 진화와 원소 생성 · 지구시스템 · 판 구조론</p>
@@ -67,6 +80,7 @@
       <div id="pro-fx" aria-hidden="true"></div>
       <div class="pro-box">
         <p id="pro-step" class="pro-step"></p>
+        <span id="pro-icon" class="pro-icon" aria-hidden="true"></span>
         <h2 id="pro-title"></h2>
         <p id="pro-desc"></p>
         <div class="pro-btns">
@@ -83,6 +97,10 @@
           <div id="objective-bar">
             <span class="obj-tag">현재 목표</span>
             <span id="objective-text"></span>
+          </div>
+          <div id="comm-panel" aria-live="polite" aria-label="관제 AI 교신">
+            <span class="comm-tag">K.O.S.M.O</span>
+            <span id="comm-text"></span><span class="comm-cursor" aria-hidden="true">▊</span>
           </div>
           <div id="room-view"></div>
         </div>

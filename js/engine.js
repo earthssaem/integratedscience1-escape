@@ -85,7 +85,9 @@ function newState() {
     hintLv: {},             // { puzzleId: 0~3 }
     hintCount: 0,
     wrongCount: 0,
-    settings: { sound: false },
+    team: { cls: '', name: '' }, // 반 · 팀명
+    stability: 100,         // 시공간 안정도(%) — 진행을 막지 않는 긴장감 요소
+    settings: { sound: true },
     playMs: 0,
     lastTick: Date.now(),
     escaped: false,
@@ -117,7 +119,9 @@ function loadGame() {
     const s = JSON.parse(raw);
     if (!s || typeof s !== 'object' || !s.solved) return false;
     state = Object.assign(newState(), s);
-    state.settings = Object.assign({ sound: false }, s.settings);
+    state.settings = Object.assign({ sound: true }, s.settings);
+    state.team = Object.assign({ cls: '', name: '' }, s.team);
+    if (typeof state.stability !== 'number') state.stability = 100;
     state.lastTick = Date.now();
     return true;
   } catch (e) { return false; }
@@ -130,9 +134,44 @@ function isSolved(id) { return !!state.solved[id]; }
 function markSolved(pid) {
   if (state.solved[pid]) return;
   state.solved[pid] = true;
+  state.stability = Math.min(100, state.stability + 3); // 복구 성공 → 안정도 소폭 회복
   saveGame();
   renderRoom();
   renderTopbar();
+  if (typeof AI_LINES !== 'undefined' && AI_LINES.solve[pid]) aiSay(AI_LINES.solve[pid]);
+}
+
+/* ---------- 관제 AI 「K.O.S.M.O.」 교신 (타자기 효과) ---------- */
+const Comm = { queue: [], busy: false, typeTimer: null, waitTimer: null };
+
+function aiSay(msg) {
+  if (!msg) return;
+  Comm.queue.push(msg);
+  if (!Comm.busy) commNext();
+}
+function commNext() {
+  const box = $('#comm-text');
+  const msg = Comm.queue.shift();
+  if (!box || msg == null) { Comm.busy = false; return; }
+  Comm.busy = true;
+  Sound.tone(880, 0.05, 'sine', 0.03);
+  clearInterval(Comm.typeTimer);
+  clearTimeout(Comm.waitTimer);
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    box.textContent = msg;
+    Comm.waitTimer = setTimeout(commNext, 1800);
+    return;
+  }
+  box.textContent = '';
+  let i = 0;
+  Comm.typeTimer = setInterval(() => {
+    box.textContent = msg.slice(0, ++i);
+    if (i >= msg.length) {
+      clearInterval(Comm.typeTimer);
+      Comm.waitTimer = setTimeout(commNext, 2400);
+    }
+  }, 18);
 }
 
 /* ---------- 아이템 / 인벤토리 ---------- */
@@ -326,8 +365,13 @@ function openHintPopup(pid) {
 /* ---------- 정답/오답 공통 ---------- */
 function recordWrong(msg, box) {
   state.wrongCount++;
+  state.stability = Math.max(10, state.stability - 2); // 오답 → 안정도 하락 (10% 밑으로는 안 내려감)
   saveGame();
   Sound.error();
+  renderTopbar();
+  if (typeof AI_LINES !== 'undefined' && !Comm.busy) {
+    aiSay(AI_LINES.wrong[Math.floor(Math.random() * AI_LINES.wrong.length)]);
+  }
   if (box) {
     box.className = 'feedback fb-err';
     box.innerHTML = `<span class="fb-icon" aria-hidden="true">✖</span><div><strong>다시 생각해 보세요</strong><p>${esc(msg)}</p></div>`;
