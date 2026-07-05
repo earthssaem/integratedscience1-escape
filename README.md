@@ -12,14 +12,35 @@
 
 별도의 서버·데이터베이스·API 키·빌드 과정이 **필요 없습니다.**
 
-1. **가장 간단한 방법** — `index.html` 파일을 브라우저(크롬 권장)로 더블클릭해 엽니다.
-2. **로컬 서버로 실행(선택)** —
+### ⭐ 가장 쉬운 방법 — 단일 파일 (`standalone.html`)
 
-   ```bash
-   # 프로젝트 폴더에서
-   python3 -m http.server 8000
-   # 브라우저에서 http://localhost:8000 접속
-   ```
+`standalone.html` **한 파일만** 다운로드해서 브라우저(크롬 권장)로 더블클릭해 열면 바로 실행됩니다.
+CSS·JavaScript가 모두 이 파일 안에 포함되어 있어, 다른 파일이나 폴더 구조가 필요 없습니다.
+학생들에게 배포하거나 USB로 나눠 줄 때 가장 편리합니다.
+
+> **주의:** `index.html`만 따로 받으면 화면이 스타일 없이 깨져 보입니다.
+> `index.html`은 `styles.css`와 `js/` 폴더가 **같은 위치에 함께 있어야** 작동하는 개발용 버전입니다.
+> 파일 하나만 받아서 쓰려면 반드시 **`standalone.html`** 을 사용하세요.
+
+### 방법 2 — 개발용 다중 파일 (`index.html`)
+
+저장소 전체(또는 `index.html` + `styles.css` + `js/` 폴더)를 **같은 위치에** 두고 `index.html`을 엽니다.
+GitHub에서는 「Code ▸ Download ZIP」으로 저장소 전체를 받아 압축을 푼 뒤 여세요.
+
+### 방법 3 — 로컬 서버로 실행(선택)
+
+```bash
+# 프로젝트 폴더에서
+python3 -m http.server 8000
+# 브라우저에서 http://localhost:8000 접속
+```
+
+> `standalone.html`은 아래 다중 파일을 자동으로 합쳐 만든 결과물입니다.
+> 소스(`js/*.js`, `styles.css`)를 수정한 뒤에는 아래 명령으로 다시 생성하세요.
+>
+> ```bash
+> node build.js   # standalone.html 재생성
+> ```
 
 ## 파일 구조
 
