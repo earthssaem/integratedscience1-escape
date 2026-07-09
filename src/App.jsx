@@ -2009,6 +2009,7 @@ export default function App() {
   const [inv, setInv] = useState([]); // 수집한 데이터패드 {label, text, room}
   const [invOpen, setInvOpen] = useState(false); // 인벤토리 패널 열림
   const [invNew, setInvNew] = useState(false); // 새 아이템 알림 점멸
+  const [confirmExit, setConfirmExit] = useState(false); // 처음 화면 나가기 확인
   const [tut, setTut] = useState(false);
   const [dragHint, setDragHint] = useState(true);
   const [dlg, setDlg] = useState(null);
@@ -2113,7 +2114,7 @@ export default function App() {
     setSolved(new Set()); setEggs(new Set()); setRoomIdx(0);
     setPenalty(0); setWrongCnt(0); setHintCnt(0); setElapsed(0);
     setModal(null); setReport(null); setStartTs(Date.now());
-    setInv([]); setInvOpen(false); setInvNew(false);
+    setInv([]); setInvOpen(false); setInvNew(false); setConfirmExit(false);
     setTut(true); setDragHint(true);
     setDlg(null); pendingRef.current = null; introRef.current = false;
     setScreen("game");
@@ -2320,11 +2321,16 @@ export default function App() {
                 <div style={{ color: "#ff8ae0", fontSize: 12 }}>✦ 크리스털 {eggs.size}/5</div>
               </div>
             </div>
-            {/* 우측: 도움말 버튼 + 타이머 (버튼을 타이머 왼쪽에 두어 겹침 방지) */}
+            {/* 우측: 도움말·나가기 버튼 + 타이머 (버튼을 타이머 왼쪽에 세로로 쌓아 겹침 방지) */}
             <div className="flex items-start gap-2 pointer-events-auto shrink-0">
-              <button onClick={() => setTut(true)}
-                className="font-mono font-bold rounded-full shrink-0"
-                style={{ width: 40, height: 40, marginTop: 4, fontSize: 18, background: "rgba(10,16,28,0.85)", border: `1px solid ${C.line}`, color: C.hud }}>?</button>
+              <div className="flex flex-col gap-1.5 shrink-0" style={{ marginTop: 4 }}>
+                <button onClick={() => setTut(true)} title="조작 방법"
+                  className="font-mono font-bold rounded-full"
+                  style={{ width: 40, height: 40, fontSize: 18, background: "rgba(10,16,28,0.85)", border: `1px solid ${C.line}`, color: C.hud }}>?</button>
+                <button onClick={() => setConfirmExit(true)} title="처음 화면으로"
+                  className="font-mono rounded-full"
+                  style={{ width: 40, height: 40, fontSize: 17, background: "rgba(10,16,28,0.85)", border: `1px solid ${C.line}`, color: C.dim }}>🏠</button>
+              </div>
               <div className="text-right">
                 <div className="font-mono font-bold text-4xl tracking-widest" style={{ color: C.hud, textShadow: "0 1px 8px #000" }}>{fmt(total)}</div>
                 <div className="font-mono mt-0.5" style={{ color: C.dim, fontSize: 12 }}>오답 {wrongCnt} · 힌트 {hintCnt}</div>
@@ -2410,6 +2416,27 @@ export default function App() {
             <div className="font-mono text-sm font-bold px-4 py-2 rounded-full"
               style={{ background: "rgba(6,10,20,0.75)", border: `1px solid ${C.hud}55`, color: C.hud }}>
               ◀ &nbsp;화면을 꾹 누른 채 드래그해서 둘러보세요&nbsp; ▶
+            </div>
+          </div>
+        )}
+        {/* 처음 화면 나가기 확인 오버레이 */}
+        {confirmExit && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(2,4,10,0.85)" }}>
+            <div className="w-full max-w-xs rounded-xl p-5 text-center" style={{ background: "#070c16", border: `1px solid ${C.bad}55` }}>
+              <div className="text-3xl mb-2">🏠</div>
+              <div className="font-mono text-sm font-bold mb-1" style={{ color: C.text }}>처음 화면으로 나갈까요?</div>
+              <p className="text-xs mb-4" style={{ color: C.dim }}>지금까지의 진행 상황과 기록은 저장되지 않고 사라집니다.</p>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmExit(false)}
+                  className="flex-1 rounded-lg py-2.5 font-mono text-sm active:scale-95 transition-all" style={btnGhost}>
+                  취소
+                </button>
+                <button onClick={() => { setConfirmExit(false); setScreen("intro"); }}
+                  className="flex-1 rounded-lg py-2.5 font-mono text-sm font-bold active:scale-95 transition-all"
+                  style={{ background: "rgba(120,20,40,0.4)", border: `1px solid ${C.bad}88`, color: C.bad }}>
+                  나가기
+                </button>
+              </div>
             </div>
           </div>
         )}
