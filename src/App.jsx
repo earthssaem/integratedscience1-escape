@@ -2006,6 +2006,9 @@ export default function App() {
   const [jumping, setJumping] = useState(false);
   const [finalSec, setFinalSec] = useState(0);
   const [report, setReport] = useState(null); // 생성된 보고서 이미지 {url, fname}
+  const [inv, setInv] = useState([]); // 수집한 데이터패드 {label, text, room}
+  const [invOpen, setInvOpen] = useState(false); // 인벤토리 패널 열림
+  const [invNew, setInvNew] = useState(false); // 새 아이템 알림 점멸
   const [tut, setTut] = useState(false);
   const [dragHint, setDragHint] = useState(true);
   const [dlg, setDlg] = useState(null);
@@ -2076,10 +2079,17 @@ export default function App() {
       setAiTone(""); setAiMsg(STEPS[meta.step].intro);
     } else if (meta.kind === "memo") {
       setModal({ kind: "memo", label: meta.label, text: meta.text });
+      // 인벤토리에 수집 (중복 방지) — 이후 🎒에서 언제든 다시 읽기 가능
+      setInv((v) => {
+        if (v.some((it) => it.label === meta.label)) return v;
+        setInvNew(true);
+        return [...v, { label: meta.label, text: meta.text, room: roomIdx }];
+      });
     } else if (meta.kind === "egg") {
       engineRef.current && engineRef.current.removeEgg();
       setEggs((e) => new Set(e).add(meta.id));
       setPenalty((p) => p - 20);
+      setInvNew(true);
       showToast("✦ 크로노 크리스털 발견! 기록 -20초", "hint");
       setTimeout(() => openDlg(DLG.crystal), 250);
     } else if (meta.kind === "gate") {
@@ -2103,6 +2113,7 @@ export default function App() {
     setSolved(new Set()); setEggs(new Set()); setRoomIdx(0);
     setPenalty(0); setWrongCnt(0); setHintCnt(0); setElapsed(0);
     setModal(null); setReport(null); setStartTs(Date.now());
+    setInv([]); setInvOpen(false); setInvNew(false);
     setTut(true); setDragHint(true);
     setDlg(null); pendingRef.current = null; introRef.current = false;
     setScreen("game");
@@ -2349,6 +2360,50 @@ export default function App() {
           </div>
           <div className="text-center font-mono mt-0.5" style={{ color: C.dim, fontSize: 9 }}>시점 회전 · ⌖ 정면</div>
         </div>
+        {/* 인벤토리 (화면 우측 가장자리) */}
+        <div className="absolute right-0 select-none" style={{ top: "44%", transform: "translateY(-50%)", zIndex: 20 }}>
+          {!invOpen ? (
+            <button onClick={() => { setInvOpen(true); setInvNew(false); }}
+              className={"rounded-l-xl font-mono text-center py-2.5 pl-2 pr-1.5" + (invNew ? " animate-pulse" : "")}
+              style={{
+                background: "rgba(10,16,28,0.88)", color: C.hud,
+                border: `1px solid ${invNew ? C.warn : C.line}`, borderRight: "none",
+                boxShadow: invNew ? `0 0 12px ${C.warn}55` : "none",
+              }}>
+              <div style={{ fontSize: 20 }}>🎒</div>
+              <div className="font-bold mt-0.5" style={{ fontSize: 11, color: invNew ? C.warn : C.hud }}>{inv.length + eggs.size}</div>
+            </button>
+          ) : (
+            <div className="rounded-l-xl p-3 overflow-y-auto"
+              style={{ width: 224, maxHeight: "46vh", background: "rgba(7,12,22,0.96)", border: `1px solid ${C.line}`, borderRight: "none" }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-xs font-bold tracking-widest" style={{ color: C.hud }}>🎒 INVENTORY</span>
+                <button onClick={() => setInvOpen(false)} className="font-mono text-xs px-2 py-1 rounded-md"
+                  style={{ border: `1px solid ${C.line}`, color: C.dim }}>✕</button>
+              </div>
+              {/* 크로노 크리스털 */}
+              <div className="rounded-lg px-2.5 py-2 mb-1.5 flex items-center justify-between"
+                style={{ background: "rgba(60,20,50,0.35)", border: "1px solid #ff8ae044" }}>
+                <span className="text-xs font-bold" style={{ color: "#ff8ae0" }}>✦ 크로노 크리스털</span>
+                <span className="font-mono text-xs font-bold" style={{ color: "#ff8ae0" }}>×{eggs.size}</span>
+              </div>
+              {/* 데이터패드 목록 — 탭하면 다시 읽기 */}
+              {inv.map((it) => (
+                <button key={it.label} onClick={() => { setInvOpen(false); setModal({ kind: "memo", label: it.label, text: it.text }); }}
+                  className="w-full rounded-lg px-2.5 py-2 mb-1.5 text-left transition-all active:scale-95"
+                  style={{ background: "rgba(10,25,40,0.5)", border: `1px solid ${C.line}` }}>
+                  <div className="text-xs font-bold" style={{ color: "#66ddff" }}>📄 {it.label}</div>
+                  <div className="font-mono mt-0.5" style={{ color: C.dim, fontSize: 9 }}>{ROOMS[it.room].name.split(" — ")[0]} · 탭하여 다시 읽기</div>
+                </button>
+              ))}
+              {inv.length === 0 && eggs.size === 0 && (
+                <p className="text-xs py-2 text-center" style={{ color: C.dim }}>
+                  아직 비어 있습니다.<br />방 안의 📄 데이터패드와<br />✦ 크리스털을 찾아보세요.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
         {/* 드래그 안내 (첫 드래그 전까지) */}
         {dragHint && !tut && !modal && (
           <div className="absolute left-1/2 pointer-events-none text-center animate-pulse" style={{ top: "34%", transform: "translateX(-50%)" }}>
@@ -2382,7 +2437,7 @@ export default function App() {
                   <div className="text-3xl">✨</div>
                   <div className="text-sm" style={{ color: C.text }}>
                     <b style={{ color: C.hud }}>조사하기</b> — 빛나는 장치에 <b>가까이 다가가서 탭</b><br />
-                    <span className="text-xs" style={{ color: C.dim }}>📄 데이터패드 = 무료 단서 · ✦ 숨은 크리스털 = 기록 -20초</span>
+                    <span className="text-xs" style={{ color: C.dim }}>📄 데이터패드 = 무료 단서 · ✦ 숨은 크리스털 = 기록 -20초<br />획득한 아이템은 화면 오른쪽 <b style={{ color: C.hud }}>🎒 인벤토리</b>에서 다시 볼 수 있어요</span>
                   </div>
                 </div>
               </div>
