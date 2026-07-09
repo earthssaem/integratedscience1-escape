@@ -115,7 +115,7 @@ const STEPS = [
 ];
 
 /* 대화 캐릭터 — TEACHER_NAME을 원하는 이름으로 바꾸세요 */
-const TEACHER_NAME = "과학쌤";
+const TEACHER_NAME = "연경썜";
 const SPK = {
   T: { name: TEACHER_NAME, emoji: "🧑\u200d🔬", color: "#ffd166" },
   A: { name: "ARKHE-AI", emoji: "🛰️", color: "#8be9fd" },
@@ -124,7 +124,7 @@ const SPK = {
 const DLG = {
   enter: [
     [
-      { s: "T", t: "…들려?! 나야, 과학쌤! 관제소에서 겨우 통신을 연결했어. 지금 네가 있는 곳은 138억 년 전, 빅뱅 직후라고!" },
+      { s: "T", t: "…들려?! 나야, 연경썜! 관제소에서 겨우 통신을 연결했어. 지금 네가 있는 곳은 138억 년 전, 빅뱅 직후라고!" },
       { s: "A", t: "통신 링크 안정화 완료. 발신자 신원 확인 — 지구 관제소, 과학 교사." },
       { s: "T", t: "침착하게 들어. 각 시대의 과학을 네가 직접 증명해야 다음 시대로 점프할 수 있어. 전부 수업 시간에 배운 거야. 넌 할 수 있어!" },
       { s: "T", t: "우선 저기 빛나는 입자 가속기 콘솔부터 가봐! 이 안개, 빛이 왜 퍼지지 못하는지부터 알아내야 해. 천천히 걸어!" },
@@ -1961,22 +1961,22 @@ function DialogueBox({ dlg, onClose }) {
         </div>
       )}
       <div className="p-3 pt-10" style={{ background: "linear-gradient(180deg, transparent, rgba(2,4,10,0.5) 35%, rgba(2,4,10,0.92))" }}>
-        <div className="max-w-xl mx-auto rounded-xl p-3.5"
+        <div className="max-w-2xl mx-auto rounded-xl p-5"
           style={{
             background: "rgba(7,12,22,0.96)", border: `1px solid ${sp.color}55`,
             animation: dlg.urgent && i === 0 ? "arkheShake .5s" : "none",
           }}>
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2.5 mb-2.5">
             <div className="flex items-center justify-center rounded-full"
-              style={{ width: 34, height: 34, background: "#0c1524", border: `1px solid ${sp.color}66`, fontSize: 18 }}>{sp.emoji}</div>
-            <span className="font-mono text-xs font-bold" style={{ color: sp.color }}>{sp.name}</span>
-            <span className="ml-auto font-mono" style={{ color: "#5a7a9a", fontSize: 9 }}>{i + 1}/{dlg.lines.length}</span>
+              style={{ width: 44, height: 44, background: "#0c1524", border: `1px solid ${sp.color}66`, fontSize: 24 }}>{sp.emoji}</div>
+            <span className="font-mono text-base font-bold" style={{ color: sp.color }}>{sp.name}</span>
+            <span className="ml-auto font-mono" style={{ color: "#5a7a9a", fontSize: 11 }}>{i + 1}/{dlg.lines.length}</span>
           </div>
-          <div className="text-sm leading-relaxed" style={{ color: "#dbe7f4", minHeight: 42 }}>
+          <div className="text-lg leading-relaxed" style={{ color: "#dbe7f4", minHeight: 62 }}>
             {line.t.slice(0, n)}
             {!done && <span className="animate-pulse" style={{ color: sp.color }}>▍</span>}
           </div>
-          <div className="text-right font-mono text-xs mt-1 animate-pulse" style={{ color: done ? sp.color : "transparent" }}>
+          <div className="text-right font-mono text-sm mt-1.5 animate-pulse" style={{ color: done ? sp.color : "transparent" }}>
             {i + 1 < dlg.lines.length ? "▼ 탭하여 계속" : "▼ 탭하여 닫기"}
           </div>
         </div>
@@ -2296,31 +2296,37 @@ export default function App() {
         )}
         <Toast toast={toast} />
         {/* 상단 HUD */}
-        <div className="absolute top-0 left-0 right-0 p-3 pointer-events-none" style={{ background: "linear-gradient(180deg, rgba(4,6,13,0.88), transparent)" }}>
-          <div className="flex items-start justify-between">
-            <div className="font-mono text-xs" style={{ color: C.dim }}>
+        <div className="absolute top-0 left-0 right-0 p-3 pointer-events-none" style={{ background: "linear-gradient(180deg, rgba(4,6,13,0.9), transparent)" }}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="font-mono text-sm" style={{ color: C.dim }}>
               {room.name}<br /><span style={{ color: C.warn }}>{room.era}</span>
-              <div className="mt-1">
+              <div className="mt-1.5">
                 {req.map((s) => (
-                  <div key={s} style={{ color: solved.has(s) ? C.ok : C.dim, fontSize: 10 }}>
+                  <div key={s} style={{ color: solved.has(s) ? C.ok : C.dim, fontSize: 12 }}>
                     {solved.has(s) ? "■" : "□"} {STEP_SHORT[s]}
                   </div>
                 ))}
-                <div style={{ color: "#ff8ae0", fontSize: 10 }}>✦ 크리스털 {eggs.size}/5</div>
+                <div style={{ color: "#ff8ae0", fontSize: 12 }}>✦ 크리스털 {eggs.size}/5</div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="font-mono font-bold text-2xl tracking-widest" style={{ color: C.hud, textShadow: "0 1px 6px #000" }}>{fmt(total)}</div>
-              <div className="font-mono" style={{ color: C.dim, fontSize: 10 }}>오답 {wrongCnt} · 힌트 {hintCnt}</div>
-              <div className="font-mono" style={{ color: C.dim, fontSize: 10 }}>MISSION {solved.size}/{STEPS.length}</div>
+            {/* 우측: 도움말 버튼 + 타이머 (버튼을 타이머 왼쪽에 두어 겹침 방지) */}
+            <div className="flex items-start gap-2 pointer-events-auto shrink-0">
+              <button onClick={() => setTut(true)}
+                className="font-mono font-bold rounded-full shrink-0"
+                style={{ width: 40, height: 40, marginTop: 4, fontSize: 18, background: "rgba(10,16,28,0.85)", border: `1px solid ${C.line}`, color: C.hud }}>?</button>
+              <div className="text-right">
+                <div className="font-mono font-bold text-4xl tracking-widest" style={{ color: C.hud, textShadow: "0 1px 8px #000" }}>{fmt(total)}</div>
+                <div className="font-mono mt-0.5" style={{ color: C.dim, fontSize: 12 }}>오답 {wrongCnt} · 힌트 {hintCnt}</div>
+                <div className="font-mono" style={{ color: C.dim, fontSize: 12 }}>MISSION {solved.size}/{STEPS.length}</div>
+              </div>
             </div>
           </div>
         </div>
         {/* AI 메시지 바 */}
         {(hudMsg || aiMsg) && !dlg && <div className="absolute pointer-events-none" style={{ bottom: 8, left: 176, right: 176 }}>
-          <div className="max-w-xl mx-auto rounded-lg p-2.5" style={{ background: "rgba(6,10,20,0.82)", border: `1px solid ${C.line}`, borderLeft: `3px solid ${aiTone === "bad" ? C.bad : aiTone === "ok" ? C.ok : aiTone === "hint" ? C.warn : C.hud}` }}>
-            <div className="font-mono mb-0.5" style={{ color: C.hud, fontSize: 9, letterSpacing: "0.15em" }}>ARKHE-AI</div>
-            <div className="text-xs leading-relaxed" style={{ color: C.text }}><Typewriter text={hudMsg || aiMsg} speed={12} /></div>
+          <div className="max-w-xl mx-auto rounded-lg p-3" style={{ background: "rgba(6,10,20,0.85)", border: `1px solid ${C.line}`, borderLeft: `3px solid ${aiTone === "bad" ? C.bad : aiTone === "ok" ? C.ok : aiTone === "hint" ? C.warn : C.hud}` }}>
+            <div className="font-mono mb-1" style={{ color: C.hud, fontSize: 11, letterSpacing: "0.15em" }}>ARKHE-AI</div>
+            <div className="text-sm leading-relaxed" style={{ color: C.text }}><Typewriter text={hudMsg || aiMsg} speed={12} /></div>
           </div>
         </div>}
         {/* D-패드 (이동) */}
@@ -2343,10 +2349,6 @@ export default function App() {
           </div>
           <div className="text-center font-mono mt-0.5" style={{ color: C.dim, fontSize: 9 }}>시점 회전 · ⌖ 정면</div>
         </div>
-        {/* 도움말 버튼 */}
-        <button onClick={() => setTut(true)}
-          className="absolute font-mono font-bold rounded-full"
-          style={{ top: 10, right: 10, width: 34, height: 34, background: "rgba(10,16,28,0.8)", border: `1px solid ${C.line}`, color: C.hud, zIndex: 25 }}>?</button>
         {/* 드래그 안내 (첫 드래그 전까지) */}
         {dragHint && !tut && !modal && (
           <div className="absolute left-1/2 pointer-events-none text-center animate-pulse" style={{ top: "34%", transform: "translateX(-50%)" }}>
