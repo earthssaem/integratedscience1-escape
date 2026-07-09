@@ -209,6 +209,19 @@ function buildReportCanvas(rec) {
   cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
 
+  // 레트로 폰트: 영문/숫자 강조 = Press Start 2P, 한글·혼합 = 둥근모
+  const PX = "'Press Start 2P'";
+  const DGM = "'DungGeunMo', monospace";
+  // 주어진 최대 폭에 맞게 폰트 크기를 자동 축소(픽셀 폰트가 넓어 오버플로 방지)
+  const fitFont = (text, weight, family, maxSize, maxWidth) => {
+    let size = maxSize;
+    for (; size > 8; size -= 2) {
+      ctx.font = `${weight} ${size}px ${family}`;
+      if (ctx.measureText(text).width <= maxWidth) break;
+    }
+    return `${weight} ${size}px ${family}`;
+  };
+
   // 배경
   const bg = ctx.createRadialGradient(W / 2, H * 1.1, 80, W / 2, H * 1.1, H);
   bg.addColorStop(0, "#12305e");
@@ -241,17 +254,17 @@ function buildReportCanvas(rec) {
 
   // 헤더
   ctx.fillStyle = "#5a7a9a";
-  ctx.font = "500 26px 'Courier New', monospace";
-  ctx.fillText("통합과학 · 1학기 복습 방탈출 — 임무 결과 보고서", cx, py + 78);
+  ctx.font = fitFont("통합과학 · 1학기 복습 방탈출 — 임무 결과 보고서", "normal", DGM, 26, pw - 80);
+  ctx.fillText("통합과학 · 1학기 복습 방탈출 — 임무 결과 보고서", cx, py + 76);
   ctx.fillStyle = "#8be9fd";
   ctx.shadowColor = "rgba(139,233,253,0.6)";
   ctx.shadowBlur = 24;
-  ctx.font = "bold 88px 'Courier New', monospace";
-  ctx.fillText("A R K H E", cx, py + 180);
+  ctx.font = fitFont("ARKHE", "normal", PX, 76, pw - 160);
+  ctx.fillText("ARKHE", cx, py + 190);
   ctx.shadowBlur = 0;
   ctx.fillStyle = "#dbe7f4";
-  ctx.font = "500 30px sans-serif";
-  ctx.fillText("138억 년의 귀환 · 3D", cx, py + 232);
+  ctx.font = `normal 30px ${DGM}`;
+  ctx.fillText("138억 년의 귀환 · 3D", cx, py + 244);
 
   // 구분선
   const line = (y) => {
@@ -262,25 +275,25 @@ function buildReportCanvas(rec) {
     ctx.lineTo(px + pw - 60, y);
     ctx.stroke();
   };
-  line(py + 278);
+  line(py + 290);
 
   // MISSION COMPLETE + 승무원
   ctx.fillStyle = "#4ade80";
-  ctx.font = "bold 34px 'Courier New', monospace";
-  ctx.fillText("✓ MISSION COMPLETE — 귀환 성공", cx, py + 352);
+  ctx.font = fitFont("MISSION COMPLETE — 귀환 성공", "normal", DGM, 34, pw - 100);
+  ctx.fillText("MISSION COMPLETE — 귀환 성공", cx, py + 362);
   ctx.fillStyle = "#dbe7f4";
-  ctx.font = "bold 52px sans-serif";
-  ctx.fillText(`승무원  ${rec.nick}`, cx, py + 436);
+  ctx.font = fitFont(`승무원  ${rec.nick}`, "normal", DGM, 52, pw - 120);
+  ctx.fillText(`승무원  ${rec.nick}`, cx, py + 442);
 
   // 최종 기록
   ctx.fillStyle = "#5a7a9a";
-  ctx.font = "500 28px 'Courier New', monospace";
-  ctx.fillText("최종 기록 (페널티 포함)", cx, py + 520);
+  ctx.font = `normal 28px ${DGM}`;
+  ctx.fillText("최종 기록 (페널티 포함)", cx, py + 522);
   ctx.fillStyle = "#8be9fd";
   ctx.shadowColor = "rgba(139,233,253,0.55)";
   ctx.shadowBlur = 28;
-  ctx.font = "bold 140px 'Courier New', monospace";
-  ctx.fillText(fmt(rec.t), cx, py + 660);
+  ctx.font = fitFont(fmt(rec.t), "normal", PX, 130, pw - 160);
+  ctx.fillText(fmt(rec.t), cx, py + 664);
   ctx.shadowBlur = 0;
 
   line(py + 724);
@@ -292,15 +305,15 @@ function buildReportCanvas(rec) {
     ["힌트 사용", `${rec.h}회  (+${rec.h * 10}초)`, rec.h ? "#fbbf24" : "#5a7a9a"],
     ["✦ 크로노 크리스털", `${rec.e} / 5  (-${rec.e * 20}초)`, "#ff8ae0"],
   ];
-  let ry = py + 800;
+  let ry = py + 804;
   for (const [label, val, color] of rows) {
     ctx.textAlign = "left";
     ctx.fillStyle = "#5a7a9a";
-    ctx.font = "500 32px sans-serif";
+    ctx.font = `normal 32px ${DGM}`;
     ctx.fillText(label, px + 100, ry);
     ctx.textAlign = "right";
     ctx.fillStyle = color;
-    ctx.font = "bold 34px 'Courier New', monospace";
+    ctx.font = `normal 34px ${DGM}`;
     ctx.fillText(val, px + pw - 100, ry);
     ry += 74;
   }
@@ -310,18 +323,18 @@ function buildReportCanvas(rec) {
   // 완료 시각 + 제출 코드
   ctx.textAlign = "center";
   ctx.fillStyle = "#5a7a9a";
-  ctx.font = "500 28px 'Courier New', monospace";
+  ctx.font = `normal 26px ${DGM}`;
   const when = new Date(rec.at).toLocaleString("ko-KR", {
     year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
   });
   ctx.fillText(`완료 시각 · ${when}`, cx, ry + 58);
   ctx.fillStyle = "#fbbf24";
-  ctx.font = "bold 34px 'Courier New', monospace";
-  ctx.fillText(`제출 코드 · ${submitCode(rec)}`, cx, ry + 118);
+  ctx.font = `normal 32px ${DGM}`;
+  ctx.fillText(`제출 코드 · ${submitCode(rec)}`, cx, ry + 116);
 
   // 푸터
   ctx.fillStyle = "#5a7a9a";
-  ctx.font = "500 26px sans-serif";
+  ctx.font = `normal 26px ${DGM}`;
   ctx.fillText("이 보고서 이미지를 저장하여 선생님께 제출하세요.", cx, py + ph - 46);
   return cv;
 }
@@ -2135,8 +2148,17 @@ export default function App() {
   };
 
   /* 결과 보고서 이미지 생성 + 다운로드 */
-  const saveReport = () => {
+  const saveReport = async () => {
     const rec = { nick: profile.nick.trim(), t: finalSec, w: wrongCnt, h: hintCnt, e: eggs.size, total: STEPS.length, at: Date.now() };
+    // 캔버스에 픽셀 폰트가 정확히 렌더되도록 폰트 로드를 먼저 보장
+    try {
+      if (document.fonts && document.fonts.load) {
+        await Promise.all([
+          document.fonts.load("130px 'Press Start 2P'"),
+          document.fonts.load("40px 'DungGeunMo'"),
+        ]);
+      }
+    } catch (e) { /* 폰트 로드 실패 시 폴백 폰트로 진행 */ }
     const cv = buildReportCanvas(rec);
     const stamp = new Date(rec.at);
     const pad2 = (n) => String(n).padStart(2, "0");
