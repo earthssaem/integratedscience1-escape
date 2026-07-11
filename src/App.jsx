@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import * as THREE from "three";
+import { Sfx } from "./sfx.js";
 
 /* ================================================================
    ARKHE — 138억 년의 귀환 : 통합과학 복습 방탈출
@@ -1999,6 +2000,66 @@ function clearSave() {
   try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
 }
 
+/* ================================================================
+   착륙 시퀀스 — 마지막 게이트 통과 후 엔딩 전 연출 (탭하여 스킵)
+   ================================================================ */
+function LandingSequence({ nick, onDone }) {
+  const [phase, setPhase] = useState(0); // 0 진입 1 감속 2 카운트다운 3 착륙 성공
+  const [flash, setFlash] = useState(false);
+  const doneRef = useRef(false);
+  const finish = useCallback(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  }, [onDone]);
+  useEffect(() => {
+    Sfx.rumble(6.2);
+    const ts = [
+      setTimeout(() => setPhase(1), 2200),
+      setTimeout(() => setPhase(2), 4400),
+      setTimeout(() => { setFlash(true); Sfx.thud(); }, 6200),
+      setTimeout(() => { setPhase(3); Sfx.clear(); }, 6800),
+      setTimeout(finish, 9400),
+    ];
+    return () => ts.forEach(clearTimeout);
+  }, [finish]);
+  const LINES = [
+    "궤도 이탈 — 대기권 진입 개시",
+    "감속 중 — 열 차폐 정상 · 고도 12,000 m",
+    "착륙 지점 고정 — 접지 3… 2… 1…",
+  ];
+  return (
+    <div className="fixed inset-0 overflow-hidden select-none" style={{ background: "#04060d", cursor: "pointer" }} onPointerDown={finish}>
+      <StarField count={70} />
+      {/* 다가오는 지구 */}
+      <div className="absolute left-1/2 top-1/2" style={{
+        width: "130vmin", height: "130vmin", marginLeft: "-65vmin", marginTop: "-65vmin",
+        borderRadius: "50%",
+        background: "radial-gradient(circle at 36% 32%, #9fd7ff 0%, #4d9fe8 22%, #2160b8 46%, #123c7a 72%, #0a2450 100%)",
+        boxShadow: "0 0 130px rgba(90,170,255,0.5), inset -50px -40px 110px rgba(0,0,20,0.55)",
+        animation: "arkheEarthGrow 6.4s ease-in forwards",
+      }}>
+        <div className="absolute inset-0" style={{
+          borderRadius: "50%",
+          background: "radial-gradient(ellipse 30% 11% at 30% 40%, rgba(255,255,255,.5), transparent 70%), radial-gradient(ellipse 38% 10% at 62% 63%, rgba(255,255,255,.42), transparent 70%), radial-gradient(ellipse 24% 9% at 52% 24%, rgba(255,255,255,.45), transparent 70%)",
+        }} />
+      </div>
+      {/* HUD 텍스트 + 진동 */}
+      <div className="absolute inset-0 flex flex-col items-center justify-between py-12 px-4 pointer-events-none"
+        style={{ animation: phase >= 1 && phase < 3 ? "arkheRumble 0.28s linear infinite" : "none" }}>
+        <div className="font-mono text-sm text-center px-4 py-2.5 rounded-lg max-w-sm"
+          style={{ background: "rgba(4,8,16,0.72)", border: `1px solid ${phase >= 3 ? C.ok + "66" : C.line}`, color: phase >= 3 ? C.ok : C.hud }}>
+          {phase < 3
+            ? <Typewriter text={LINES[Math.min(phase, 2)]} speed={20} />
+            : <>🌍 착륙 성공 — 귀환을 환영합니다, {nick}</>}
+        </div>
+        <div className="font-mono text-xs animate-pulse" style={{ color: C.dim, textShadow: "0 1px 4px #000" }}>탭하여 건너뛰기 ▸</div>
+      </div>
+      {flash && <div className="absolute inset-0 pointer-events-none" style={{ background: "#eaf6ff", animation: "arkheFlash 1.3s ease-out forwards" }} />}
+    </div>
+  );
+}
+
 export default function App() {
   const [screen, setScreen] = useState("intro");
   const [profile, setProfile] = useState({ nick: "" });
@@ -2025,6 +2086,12 @@ export default function App() {
   const [invNew, setInvNew] = useState(false); // 새 아이템 알림 점멸
   const [confirmExit, setConfirmExit] = useState(false); // 처음 화면 나가기 확인
   const [saveData, setSaveData] = useState(() => loadSave()); // 이어하기용 저장 기록
+  const [banner, setBanner] = useState(null); // ROOM CLEAR 배너 {room, time}
+  const [roomTimes, setRoomTimes] = useState([]); // 방별 클리어 소요 시간(초)
+  const [roomStart, setRoomStart] = useState(0); // 현재 방 입장 시점의 누적 기록
+  const [muted, setMuted] = useState(() => {
+    try { return localStorage.getItem("arkhe:muted") === "1"; } catch (e) { return false; }
+  });
   const [tut, setTut] = useState(false);
   const [dragHint, setDragHint] = useState(true);
   const [dlg, setDlg] = useState(null);
@@ -2054,10 +2121,24 @@ export default function App() {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
         v: 1, nick: profile.nick, roomIdx,
         solved: [...solved], eggs: [...eggs], inv,
-        penalty, wrongCnt, hintCnt, elapsed, savedAt: Date.now(),
+        penalty, wrongCnt, hintCnt, elapsed,
+        roomTimes, roomStart, savedAt: Date.now(),
       }));
     } catch (e) { /* 시크릿 모드 등 저장 불가 시 무시 */ }
-  }, [screen, startTs, roomIdx, solved, eggs, inv, penalty, wrongCnt, hintCnt, elapsed, profile.nick]);
+  }, [screen, startTs, roomIdx, solved, eggs, inv, penalty, wrongCnt, hintCnt, elapsed, profile.nick, roomTimes, roomStart]);
+
+  /* 음소거 설정 적용 + 기기에 기억 */
+  useEffect(() => {
+    Sfx.setMuted(muted);
+    try { localStorage.setItem("arkhe:muted", muted ? "1" : "0"); } catch (e) {}
+  }, [muted]);
+
+  /* 방별 앰비언트 사운드 */
+  useEffect(() => {
+    if (screen !== "game") return;
+    Sfx.ambient(roomIdx);
+    return () => Sfx.stopAmbient();
+  }, [screen, roomIdx]);
 
   /* 인트로로 돌아올 때 저장 기록 갱신 (이어하기 카드 표시용) */
   useEffect(() => {
@@ -2094,6 +2175,7 @@ export default function App() {
       },
       onFirstDrag: () => setDragHint(false),
       onFall: () => {
+        Sfx.fall();
         setPenalty((p) => p + 10);
         showToast("⚠ 추락! 발판으로 복귀 +10초", "bad");
         setHudMsg("발판 한가운데로, 천천히 건너십시오.");
@@ -2120,9 +2202,11 @@ export default function App() {
     if (modal || dlgRef.current) return;
     if (meta.kind === "puzzle") {
       if (meta.solved) { setHudMsg(`${meta.label} — 이미 해석 완료된 장치입니다.`); return; }
+      Sfx.ui();
       setModal({ kind: "puzzle", step: meta.step }); setModalDone(false);
       setAiTone(""); setAiMsg(STEPS[meta.step].intro);
     } else if (meta.kind === "memo") {
+      Sfx.memo();
       setModal({ kind: "memo", label: meta.label, text: meta.text });
       // 인벤토리에 수집 (중복 방지) — 이후 🎒에서 언제든 다시 읽기 가능
       setInv((v) => {
@@ -2132,6 +2216,7 @@ export default function App() {
       });
     } else if (meta.kind === "egg") {
       engineRef.current && engineRef.current.removeEgg();
+      Sfx.crystal();
       setEggs((e) => new Set(e).add(meta.id));
       setPenalty((p) => p - 20);
       setInvNew(true);
@@ -2141,24 +2226,32 @@ export default function App() {
       const req = WORLDS[roomIdx].props.map((p) => p.step);
       const remain = req.filter((s) => !solvedRef.current.has(s)).length;
       if (remain > 0) {
+        Sfx.deny();
         setAiTone("bad"); setAiMsg(`게이트 잠김 — 이 시대의 남은 임무: ${remain}건. 방 안의 빛나는 장치를 조사하십시오.`);
         return;
       }
       if (roomIdx === WORLDS.length - 1) {
         const t = Math.max(0, Math.floor((Date.now() - startTs) / 1000) + penalty);
-        setFinalSec(t); setReport(null); clearSave(); setScreen("ending");
+        setFinalSec(t); setReport(null); clearSave();
+        setScreen("landing"); // 착륙 시퀀스 연출 후 엔딩으로
         return;
       }
+      Sfx.jump();
+      // 다음 방 기록 측정 시작점 저장
+      const nowTotal = Math.max(0, Math.floor((Date.now() - startTs) / 1000) + penalty);
+      setRoomStart(nowTotal);
       setJumping(true);
       setTimeout(() => { setRoomIdx((r) => r + 1); setTimeout(() => setJumping(false), 500); }, 900);
     }
   };
 
   const startGame = () => {
+    Sfx.init(); // 버튼 클릭(사용자 입력) 시점에 오디오 잠금 해제
     setSolved(new Set()); setEggs(new Set()); setRoomIdx(0);
     setPenalty(0); setWrongCnt(0); setHintCnt(0); setElapsed(0);
     setModal(null); setReport(null); setStartTs(Date.now());
     setInv([]); setInvOpen(false); setInvNew(false); setConfirmExit(false);
+    setBanner(null); setRoomTimes([]); setRoomStart(0);
     setTut(true); setDragHint(true);
     setDlg(null); pendingRef.current = null; introRef.current = false;
     setScreen("game");
@@ -2168,12 +2261,14 @@ export default function App() {
   const resumeGame = () => {
     const d = loadSave();
     if (!d) return;
+    Sfx.init();
     setProfile({ nick: d.nick });
     setSolved(new Set(d.solved)); setEggs(new Set(d.eggs)); setInv(d.inv || []);
     setRoomIdx(d.roomIdx);
     setPenalty(d.penalty || 0); setWrongCnt(d.wrongCnt || 0); setHintCnt(d.hintCnt || 0);
     setElapsed(d.elapsed || 0); setStartTs(Date.now() - (d.elapsed || 0) * 1000);
     setModal(null); setReport(null); setInvOpen(false); setInvNew(false); setConfirmExit(false);
+    setBanner(null); setRoomTimes(d.roomTimes || []); setRoomStart(d.roomStart || 0);
     setTut(false); setDragHint(false);
     setDlg(null); pendingRef.current = null; introRef.current = true;
     setScreen("game");
@@ -2186,11 +2281,13 @@ export default function App() {
     showToast("⚠ 오답 페널티 +30초", "bad");
   };
   const onHint = (step) => {
+    Sfx.hint();
     setPenalty((p) => p + 10); setHintCnt((h) => h + 1);
     setAiTone("hint"); setAiMsg("[힌트] " + step.hint);
     showToast("힌트 사용 +10초", "hint");
   };
   const onDone = (stepIdx) => {
+    Sfx.correct();
     setModalDone(true);
     if (stepIdx === 3) pendingRef.current = "urgent";
     setAiTone("ok"); setAiMsg(STEPS[stepIdx].success);
@@ -2211,7 +2308,14 @@ export default function App() {
       pendingRef.current = null;
       setTimeout(() => openDlg(DLG.urgentStar, true), 350);
     } else if (open) {
-      setTimeout(() => openDlg(DLG.gate[roomIdx]), 350);
+      // ROOM CLEAR — 이 방을 푸는 데 걸린 시간 기록 + 배너 연출
+      const nowTotal = Math.max(0, Math.floor((Date.now() - startTs) / 1000) + penalty);
+      const rt = Math.max(0, nowTotal - roomStart);
+      setRoomTimes((a) => { const b = [...a]; b[roomIdx] = rt; return b; });
+      setBanner({ room: roomIdx, time: rt });
+      Sfx.clear();
+      setTimeout(() => setBanner(null), 2400);
+      setTimeout(() => openDlg(DLG.gate[roomIdx]), 2600);
     }
   };
   const orderProgress = (p) => {
@@ -2251,6 +2355,9 @@ export default function App() {
       @keyframes arkheDrop {from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
       @keyframes arkheFlash {0%{opacity:0}25%{opacity:1}100%{opacity:0}}
       @keyframes arkheShake {0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+      @keyframes arkheBanner {0%{opacity:0;transform:scale(.6)}12%{opacity:1;transform:scale(1.08)}22%{transform:scale(1)}78%{opacity:1}100%{opacity:0;transform:scale(1.04)}}
+      @keyframes arkheEarthGrow {from{transform:scale(.12)}to{transform:scale(1.2)}}
+      @keyframes arkheRumble {0%{transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}100%{transform:translate(0,0)}}
       select option{background:#05070d;color:#8be9fd;}
       input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
       html,body{overscroll-behavior:none;}
@@ -2413,6 +2520,9 @@ export default function App() {
                 <button onClick={() => setConfirmExit(true)} title="처음 화면으로"
                   className="font-mono rounded-full"
                   style={{ width: 40, height: 40, fontSize: 17, background: "rgba(10,16,28,0.85)", border: `1px solid ${C.line}`, color: C.dim }}>🏠</button>
+                <button onClick={() => setMuted((m) => !m)} title="소리 켜기/끄기"
+                  className="font-mono rounded-full"
+                  style={{ width: 40, height: 40, fontSize: 16, background: "rgba(10,16,28,0.85)", border: `1px solid ${C.line}`, color: muted ? C.dim : C.hud }}>{muted ? "🔇" : "🔊"}</button>
               </div>
               <div className="text-right">
                 <div className="font-mono font-bold text-4xl tracking-widest" style={{ color: C.hud, textShadow: "0 1px 8px #000" }}>{fmt(total)}</div>
@@ -2564,6 +2674,21 @@ export default function App() {
         )}
         {/* 대화 오버레이 */}
         {dlg && !tut && <DialogueBox key={dlg.id} dlg={dlg} onClose={() => setDlg(null)} />}
+        {/* ROOM CLEAR 배너 */}
+        {banner && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none">
+            <div className="text-center px-6 py-5 rounded-2xl"
+              style={{ background: "rgba(4,10,8,0.82)", border: `1px solid ${C.ok}66`, boxShadow: `0 0 40px ${C.ok}33`, animation: "arkheBanner 2.4s ease-out forwards" }}>
+              <div className="font-mono font-bold tracking-widest" style={{ fontSize: 30, color: C.ok, textShadow: `0 0 22px ${C.ok}88` }}>
+                ROOM {String(banner.room + 1).padStart(2, "0")} CLEAR
+              </div>
+              <div className="font-mono font-bold text-2xl mt-2" style={{ color: C.hud }}>{fmt(banner.time)}</div>
+              <div className="font-mono text-xs mt-1.5" style={{ color: C.dim }}>
+                {banner.room === WORLDS.length - 1 ? "착륙 게이트 개방" : "점프 게이트 개방"}
+              </div>
+            </div>
+          </div>
+        )}
         {/* 점프 오버레이 */}
         {jumping && (
           <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ background: "#dff6ff", animation: "arkheFlash 1.4s ease-out forwards" }}>
@@ -2619,6 +2744,16 @@ export default function App() {
     );
   }
 
+  /* ---------- 착륙 시퀀스 ---------- */
+  if (screen === "landing") {
+    return (
+      <div>
+        {GlobalCss}
+        <LandingSequence nick={profile.nick} onDone={() => setScreen("ending")} />
+      </div>
+    );
+  }
+
   /* ---------- 엔딩 ---------- */
   if (screen === "ending") {
     return (
@@ -2635,6 +2770,17 @@ export default function App() {
               오답 {wrongCnt}회(+{wrongCnt * 30}초) · 힌트 {hintCnt}회(+{hintCnt * 10}초)
             </div>
             <div className="font-mono text-xs mb-4" style={{ color: "#ff8ae0" }}>✦ 크로노 크리스털 {eggs.size}/5 (-{eggs.size * 20}초)</div>
+            {/* 방별 기록 */}
+            {roomTimes.some((t) => t != null) && (
+              <div className="rounded-lg px-3 py-2.5 mb-4 text-left" style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${C.line}` }}>
+                {ROOMS.map((r, i) => (
+                  <div key={i} className="flex justify-between font-mono text-xs py-0.5">
+                    <span style={{ color: C.dim }}>{r.name.split(" — ")[0]}</span>
+                    <span style={{ color: roomTimes[i] != null ? C.hud : C.dim }}>{roomTimes[i] != null ? fmt(roomTimes[i]) : "—"}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <button onClick={saveReport} className="w-full rounded-lg py-3 font-mono font-bold mb-2 active:scale-95 transition-all" style={btnPrimary()}>
               📄 결과 보고서 저장 (선생님 제출용)
             </button>
