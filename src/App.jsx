@@ -1985,6 +1985,20 @@ function DialogueBox({ dlg, onClose }) {
   );
 }
 
+/* ---------- 진행 상황 자동 저장 (localStorage) ----------
+   새로고침·뒤로가기·탭 종료로 진행이 날아가지 않도록 기기에만 저장합니다.
+   (서버 전송 없음 — 개인정보 미수집 방침 유지) */
+const SAVE_KEY = "arkhe:save";
+function loadSave() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY));
+    return d && d.v === 1 && d.nick && Array.isArray(d.solved) ? d : null;
+  } catch (e) { return null; }
+}
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+}
+
 export default function App() {
   const [screen, setScreen] = useState("intro");
   const [profile, setProfile] = useState({ nick: "" });
@@ -2010,6 +2024,7 @@ export default function App() {
   const [invOpen, setInvOpen] = useState(false); // 인벤토리 패널 열림
   const [invNew, setInvNew] = useState(false); // 새 아이템 알림 점멸
   const [confirmExit, setConfirmExit] = useState(false); // 처음 화면 나가기 확인
+  const [saveData, setSaveData] = useState(() => loadSave()); // 이어하기용 저장 기록
   const [tut, setTut] = useState(false);
   const [dragHint, setDragHint] = useState(true);
   const [dlg, setDlg] = useState(null);
@@ -2031,6 +2046,35 @@ export default function App() {
     const id = setInterval(() => setElapsed(Math.floor((Date.now() - startTs) / 1000)), 400);
     return () => clearInterval(id);
   }, [screen, startTs]);
+
+  /* 진행 상황 자동 저장 — 게임 중 상태가 바뀔 때마다 (elapsed 틱 포함) */
+  useEffect(() => {
+    if (screen !== "game" || !startTs) return;
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        v: 1, nick: profile.nick, roomIdx,
+        solved: [...solved], eggs: [...eggs], inv,
+        penalty, wrongCnt, hintCnt, elapsed, savedAt: Date.now(),
+      }));
+    } catch (e) { /* 시크릿 모드 등 저장 불가 시 무시 */ }
+  }, [screen, startTs, roomIdx, solved, eggs, inv, penalty, wrongCnt, hintCnt, elapsed, profile.nick]);
+
+  /* 인트로로 돌아올 때 저장 기록 갱신 (이어하기 카드 표시용) */
+  useEffect(() => {
+    if (screen === "intro") setSaveData(loadSave());
+  }, [screen]);
+
+  /* 안드로이드 뒤로가기 가드 — 게임 중 뒤로가기 시 이탈 대신 나가기 확인창 */
+  useEffect(() => {
+    if (screen !== "game") return;
+    const onPop = () => {
+      window.history.pushState({ arkhe: 1 }, "");
+      setConfirmExit(true);
+    };
+    window.history.pushState({ arkhe: 1 }, "");
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [screen]);
 
   const showToast = (text, kind) => {
     clearTimeout(toastTimer.current);
@@ -2102,7 +2146,7 @@ export default function App() {
       }
       if (roomIdx === WORLDS.length - 1) {
         const t = Math.max(0, Math.floor((Date.now() - startTs) / 1000) + penalty);
-        setFinalSec(t); setReport(null); setScreen("ending");
+        setFinalSec(t); setReport(null); clearSave(); setScreen("ending");
         return;
       }
       setJumping(true);
@@ -2117,6 +2161,21 @@ export default function App() {
     setInv([]); setInvOpen(false); setInvNew(false); setConfirmExit(false);
     setTut(true); setDragHint(true);
     setDlg(null); pendingRef.current = null; introRef.current = false;
+    setScreen("game");
+  };
+
+  /* 저장된 진행 상황에서 이어하기 — 타이머는 저장 시점부터 다시 진행 */
+  const resumeGame = () => {
+    const d = loadSave();
+    if (!d) return;
+    setProfile({ nick: d.nick });
+    setSolved(new Set(d.solved)); setEggs(new Set(d.eggs)); setInv(d.inv || []);
+    setRoomIdx(d.roomIdx);
+    setPenalty(d.penalty || 0); setWrongCnt(d.wrongCnt || 0); setHintCnt(d.hintCnt || 0);
+    setElapsed(d.elapsed || 0); setStartTs(Date.now() - (d.elapsed || 0) * 1000);
+    setModal(null); setReport(null); setInvOpen(false); setInvNew(false); setConfirmExit(false);
+    setTut(false); setDragHint(false);
+    setDlg(null); pendingRef.current = null; introRef.current = true;
     setScreen("game");
   };
 
@@ -2226,6 +2285,30 @@ export default function App() {
               시스템 부팅 ▸
             </button>
           </div>
+          {/* 저장된 진행 상황 — 이어하기 */}
+          {saveData && (
+            <div className="rounded-xl p-4 mt-3" style={{ background: C.panel, border: `1px solid ${C.ok}44` }}>
+              <div className="font-mono text-xs mb-2" style={{ color: C.ok }}>💾 저장된 탐사 기록</div>
+              <div className="text-sm mb-3" style={{ color: C.text }}>
+                <b>{saveData.nick}</b>
+                <span className="font-mono text-xs ml-2" style={{ color: C.dim }}>
+                  {ROOMS[saveData.roomIdx] ? ROOMS[saveData.roomIdx].name.split(" — ")[0] : ""} ·
+                  MISSION {saveData.solved.length}/{STEPS.length} · {fmt(Math.max(0, (saveData.elapsed || 0) + (saveData.penalty || 0)))}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={resumeGame}
+                  className="flex-1 rounded-lg py-2.5 font-mono font-bold text-sm active:scale-95 transition-all"
+                  style={btnPrimary({ borderColor: C.ok + "66", color: C.ok, background: "linear-gradient(180deg,#0b3a26,#062818)" })}>
+                  ▶ 이어서 하기
+                </button>
+                <button onClick={() => { clearSave(); setSaveData(null); }}
+                  className="rounded-lg px-4 py-2.5 font-mono text-sm" style={btnGhost}>
+                  🗑 삭제
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -2340,7 +2423,8 @@ export default function App() {
           </div>
         </div>
         {/* AI 메시지 바 */}
-        {(hudMsg || aiMsg) && !dlg && <div className="absolute pointer-events-none" style={{ bottom: 8, left: 176, right: 176 }}>
+        {/* 좁은 화면(폰)에서는 조작 패드 위에 전체 폭으로, 넓은 화면에서는 패드 사이 하단에 표시 */}
+        {(hudMsg || aiMsg) && !dlg && <div className="absolute pointer-events-none left-3 right-3 bottom-[204px] sm:left-[176px] sm:right-[176px] sm:bottom-2">
           <div className="max-w-xl mx-auto rounded-lg p-3" style={{ background: "rgba(6,10,20,0.85)", border: `1px solid ${C.line}`, borderLeft: `3px solid ${aiTone === "bad" ? C.bad : aiTone === "ok" ? C.ok : aiTone === "hint" ? C.warn : C.hud}` }}>
             <div className="font-mono mb-1" style={{ color: C.hud, fontSize: 11, letterSpacing: "0.15em" }}>ARKHE-AI</div>
             <div className="text-sm leading-relaxed" style={{ color: C.text }}><Typewriter text={hudMsg || aiMsg} speed={12} /></div>
@@ -2412,7 +2496,8 @@ export default function App() {
         </div>
         {/* 드래그 안내 (첫 드래그 전까지) */}
         {dragHint && !tut && !modal && (
-          <div className="absolute left-1/2 pointer-events-none text-center animate-pulse" style={{ top: "34%", transform: "translateX(-50%)" }}>
+          <div className="absolute left-1/2 pointer-events-none text-center animate-pulse"
+            style={{ top: "26%", transform: "translateX(-50%)", width: "min(420px, calc(100% - 128px))" }}>
             <div className="font-mono text-sm font-bold px-4 py-2 rounded-full"
               style={{ background: "rgba(6,10,20,0.75)", border: `1px solid ${C.hud}55`, color: C.hud }}>
               ◀ &nbsp;화면을 꾹 누른 채 드래그해서 둘러보세요&nbsp; ▶
@@ -2425,7 +2510,7 @@ export default function App() {
             <div className="w-full max-w-xs rounded-xl p-5 text-center" style={{ background: "#070c16", border: `1px solid ${C.bad}55` }}>
               <div className="text-3xl mb-2">🏠</div>
               <div className="font-mono text-sm font-bold mb-1" style={{ color: C.text }}>처음 화면으로 나갈까요?</div>
-              <p className="text-xs mb-4" style={{ color: C.dim }}>지금까지의 진행 상황과 기록은 저장되지 않고 사라집니다.</p>
+              <p className="text-xs mb-4" style={{ color: C.dim }}>진행 상황은 이 기기에 자동 저장됩니다. 처음 화면의 <b style={{ color: C.ok }}>▶ 이어서 하기</b>로 계속할 수 있어요.</p>
               <div className="flex gap-2">
                 <button onClick={() => setConfirmExit(false)}
                   className="flex-1 rounded-lg py-2.5 font-mono text-sm active:scale-95 transition-all" style={btnGhost}>
