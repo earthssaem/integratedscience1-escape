@@ -115,6 +115,22 @@ const STEPS = [
   },
 ];
 
+/* ---------- 개념 카드 — 미션 클리어 시 인벤토리에 수집되는 복습 요약 ---------- */
+const CONCEPT_CARDS = [
+  { title: "빅뱅 직후 입자의 생성 순서", body: "쿼크·전자(기본 입자) → 양성자·중성자(쿼크 3개 결합) → 원자핵 → 원자. 전기적으로 중성인 원자가 생성되자 빛이 자유롭게 직진하게 되어, 우주가 투명해졌다." },
+  { title: "우주 배경 복사", body: "원자 생성 직후 우주 공간으로 풀려난 빛. 지금도 모든 방향에서 거의 같은 세기(약 3 K 물체의 복사)로 관측되며, 우주가 한 점의 대폭발에서 시작되었다는 빅뱅 우주론의 결정적 증거다." },
+  { title: "흡수 스펙트럼과 별의 조성", body: "별빛의 흡수선 위치를 원소별 기준선과 대조하면 그 별에 어떤 원소가 있는지 알 수 있다. 어느 별을 보아도 수소와 헬륨이 가장 풍부한데, 이는 빅뱅 초기에 만들어진 원소들이기 때문이다." },
+  { title: "수소 핵융합과 질량-에너지", body: "헬륨 원자핵은 양성자 2개 + 중성자 2개. 융합 반응 후 줄어든 질량이 에너지로 방출된다 (E = mc²). 별이 빛나는 이유다." },
+  { title: "핵융합 점화 온도", body: "별의 중심 온도가 약 1000만 K에 도달하면 수소 핵융합이 시작된다. 수소 원자핵 4개가 융합하여 헬륨 원자핵 1개가 된다." },
+  { title: "초신성 폭발과 무거운 원소", body: "질량이 태양의 10배 이상인 별만 중심에 철(Fe)까지 만들 수 있다. 철은 매우 안정하여 더 이상 융합하지 못하므로 별은 붕괴 후 초신성으로 폭발하고, 이 폭발에서 금·납·우라늄 등 철보다 무거운 원소가 만들어진다." },
+  { title: "별의 진화와 블랙홀", body: "주계열성일 때 질량이 태양의 10~20배인 별은 초신성 폭발 후 중성자별을, 20배 이상인 별은 블랙홀을 남긴다. 블랙홀은 빛조차 빠져나오지 못하는 천체다." },
+  { title: "지구의 형성 과정", body: "미행성체 충돌로 원시 지구가 뭉침 → 충돌열로 마그마 바다 형성 → 무거운 철·니켈이 가라앉아 핵, 가벼운 규산염이 떠올라 맨틀 형성 → 표면이 식으며 원시 지각과 바다가 생기고 생명이 탄생했다." },
+  { title: "지구시스템의 상호작용", body: "지권·기권·수권·생물권은 서로 물질과 에너지를 주고받는다. 화산 분출은 지권→기권, 광합성은 기권↔생물권, 태풍은 수권→기권, 해안 침식은 수권→지권의 상호작용이다." },
+  { title: "물 순환의 평형", body: "대기로 들어오는 물(증발: 바다 320 + 육지 60 = 380)과 대기에서 나가는 물(강수: 바다 284 + 육지 96 = 380)은 같다. 유입량 = 유출량, 지구의 물은 평형 상태다." },
+  { title: "변동대 — 지진대와 화산대", body: "지진대와 화산대는 띠 모양으로 거의 일치하며, 대부분 판의 경계(변동대)에 분포한다. 지각 변동을 일으키는 에너지원은 지구 내부 에너지다." },
+  { title: "판 경계의 유형", body: "두 대륙판이 충돌하면 습곡 산맥(히말라야), 섭입하면 해구(일본 해구), 갈라지면 해령(대서양 중앙 해령), 어긋나며 스치면 변환 단층(산안드레아스)이 발달한다." },
+];
+
 /* 대화 캐릭터 — TEACHER_NAME을 원하는 이름으로 바꾸세요 */
 const TEACHER_NAME = "연경썜";
 const SPK = {
@@ -401,13 +417,18 @@ function StarField({ count = 60 }) {
 
 function Toast({ toast }) {
   if (!toast) return null;
+  const s = toast.kind === "hint"
+    ? { bg: "rgba(120,80,0,0.9)", c: C.warn }
+    : toast.kind === "ok"
+      ? { bg: "rgba(8,70,40,0.92)", c: C.ok }
+      : { bg: "rgba(120,20,40,0.92)", c: C.bad };
   return (
     <div key={toast.id} className="fixed top-16 left-1/2 z-50 font-mono text-sm px-4 py-2 rounded-lg"
       style={{
         transform: "translateX(-50%)",
-        background: toast.kind === "hint" ? "rgba(120,80,0,0.9)" : "rgba(120,20,40,0.92)",
-        border: `1px solid ${toast.kind === "hint" ? C.warn : C.bad}`,
-        color: toast.kind === "hint" ? C.warn : C.bad,
+        background: s.bg,
+        border: `1px solid ${s.c}`,
+        color: s.c,
         animation: "arkheDrop .25s ease-out",
       }}>
       {toast.text}
@@ -2210,9 +2231,9 @@ export default function App() {
       setModal({ kind: "memo", label: meta.label, text: meta.text });
       // 인벤토리에 수집 (중복 방지) — 이후 🎒에서 언제든 다시 읽기 가능
       setInv((v) => {
-        if (v.some((it) => it.label === meta.label)) return v;
+        if (v.some((it) => it.kind !== "card" && it.label === meta.label)) return v;
         setInvNew(true);
-        return [...v, { label: meta.label, text: meta.text, room: roomIdx }];
+        return [...v, { kind: "memo", label: meta.label, text: meta.text, room: roomIdx }];
       });
     } else if (meta.kind === "egg") {
       engineRef.current && engineRef.current.removeEgg();
@@ -2295,6 +2316,16 @@ export default function App() {
       const ns = new Set(s); ns.add(stepIdx);
       return ns;
     });
+    // 개념 카드 수집 — 미션의 핵심 개념 요약이 🎒 인벤토리에 쌓여 복습 노트가 됨
+    const card = CONCEPT_CARDS[stepIdx];
+    if (card) {
+      setInv((v) => {
+        if (v.some((it) => it.kind === "card" && it.step === stepIdx)) return v;
+        setInvNew(true);
+        return [...v, { kind: "card", step: stepIdx, label: card.title, text: card.body, room: roomIdx }];
+      });
+      setTimeout(() => showToast(`📗 개념 카드 획득 — ${card.title}`, "ok"), 400);
+    }
     engineRef.current && engineRef.current.markSolved(stepIdx);
   };
   const closePuzzle = () => {
@@ -2316,6 +2347,13 @@ export default function App() {
       Sfx.clear();
       setTimeout(() => setBanner(null), 2400);
       setTimeout(() => openDlg(DLG.gate[roomIdx]), 2600);
+      // 크리스털 유도 — 이 방의 크리스털을 아직 못 찾았다면 탐색 동기 부여
+      if (!eggs.has(roomIdx)) {
+        setTimeout(() => {
+          setAiTone("hint");
+          setAiMsg("✦ 미확인 크로노 크리스털 신호가 이 방 어딘가에 남아 있습니다. 게이트 진입 전에 찾으면 기록 -20초.");
+        }, 2700);
+      }
     }
   };
   const orderProgress = (p) => {
@@ -2587,18 +2625,29 @@ export default function App() {
                 <span className="text-xs font-bold" style={{ color: "#ff8ae0" }}>✦ 크로노 크리스털</span>
                 <span className="font-mono text-xs font-bold" style={{ color: "#ff8ae0" }}>×{eggs.size}</span>
               </div>
-              {/* 데이터패드 목록 — 탭하면 다시 읽기 */}
-              {inv.map((it) => (
-                <button key={it.label} onClick={() => { setInvOpen(false); setModal({ kind: "memo", label: it.label, text: it.text }); }}
-                  className="w-full rounded-lg px-2.5 py-2 mb-1.5 text-left transition-all active:scale-95"
-                  style={{ background: "rgba(10,25,40,0.5)", border: `1px solid ${C.line}` }}>
-                  <div className="text-xs font-bold" style={{ color: "#66ddff" }}>📄 {it.label}</div>
-                  <div className="font-mono mt-0.5" style={{ color: C.dim, fontSize: 9 }}>{ROOMS[it.room].name.split(" — ")[0]} · 탭하여 다시 읽기</div>
-                </button>
-              ))}
+              {/* 개념 카드·데이터패드 목록 — 탭하면 다시 읽기 */}
+              {inv.map((it) => {
+                const isCard = it.kind === "card";
+                return (
+                  <button key={(isCard ? "c:" : "m:") + it.label}
+                    onClick={() => { setInvOpen(false); setModal({ kind: "memo", label: it.label, text: it.text, card: isCard }); }}
+                    className="w-full rounded-lg px-2.5 py-2 mb-1.5 text-left transition-all active:scale-95"
+                    style={{
+                      background: isCard ? "rgba(8,50,30,0.45)" : "rgba(10,25,40,0.5)",
+                      border: `1px solid ${isCard ? C.ok + "44" : C.line}`,
+                    }}>
+                    <div className="text-xs font-bold" style={{ color: isCard ? C.ok : "#66ddff" }}>
+                      {isCard ? "📗" : "📄"} {it.label}
+                    </div>
+                    <div className="font-mono mt-0.5" style={{ color: C.dim, fontSize: 9 }}>
+                      {isCard ? "개념 카드 · 탭하여 복습" : `${ROOMS[it.room].name.split(" — ")[0]} · 탭하여 다시 읽기`}
+                    </div>
+                  </button>
+                );
+              })}
               {inv.length === 0 && eggs.size === 0 && (
                 <p className="text-xs py-2 text-center" style={{ color: C.dim }}>
-                  아직 비어 있습니다.<br />방 안의 📄 데이터패드와<br />✦ 크리스털을 찾아보세요.
+                  아직 비어 있습니다.<br />미션을 풀면 📗 개념 카드가,<br />방을 뒤지면 📄 데이터패드와<br />✦ 크리스털이 모입니다.
                 </p>
               )}
             </div>
@@ -2701,7 +2750,9 @@ export default function App() {
             <div className="w-full max-w-md rounded-xl p-4 overflow-y-auto" style={{ background: "#070c16", border: `1px solid ${C.line}`, maxHeight: "88%" }}>
               {modal.kind === "memo" ? (
                 <div>
-                  <div className="font-mono text-xs mb-2" style={{ color: "#66ddff" }}>📄 {modal.label}</div>
+                  <div className="font-mono text-xs mb-2" style={{ color: modal.card ? C.ok : "#66ddff" }}>
+                    {modal.card ? "📗" : "📄"} {modal.label}
+                  </div>
                   <p className="text-sm leading-relaxed mb-4" style={{ color: C.text }}>{modal.text}</p>
                   <button onClick={() => setModal(null)} className="w-full rounded-lg py-2.5 font-mono text-sm" style={btnGhost}>닫기</button>
                 </div>
