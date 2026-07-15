@@ -2807,8 +2807,9 @@ export default function App() {
         {/* 드래그 안내 (첫 드래그 전까지) */}
         {dragHint && !tut && !modal && (
           <div className="absolute left-1/2 pointer-events-none text-center animate-pulse"
-            style={{ top: "26%", transform: "translateX(-50%)", width: "min(420px, calc(100% - 128px))" }}>
-            <div className="font-mono text-sm font-bold px-4 py-2 rounded-full"
+            style={{ top: "26%", transform: "translateX(-50%)", maxWidth: "calc(100% - 12px)" }}>
+            {/* 알약이 내용 폭에 맞게 늘어나고 줄바꿈 없이 한 줄 유지 (좁은 폰은 글자 축소) */}
+            <div className="font-mono text-xs sm:text-sm font-bold px-4 py-2 rounded-full whitespace-nowrap"
               style={{ background: "rgba(6,10,20,0.75)", border: `1px solid ${C.hud}55`, color: C.hud }}>
               ◀ &nbsp;화면을 꾹 누른 채 드래그해서 둘러보세요&nbsp; ▶
             </div>
