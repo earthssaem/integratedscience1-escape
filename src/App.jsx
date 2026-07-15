@@ -2656,8 +2656,8 @@ export default function App() {
       </button>
     );
     return (
-      {/* select-none + 콜아웃/컨텍스트 메뉴 차단 — 태블릿에서 방향키 등을
-          길게 눌러도 텍스트 선택·공유/인쇄 메뉴가 뜨지 않게 */}
+      // select-none + 콜아웃/컨텍스트 메뉴 차단 — 태블릿에서 방향키 등을
+      // 길게 눌러도 텍스트 선택·공유/인쇄 메뉴가 뜨지 않게
       <div className="fixed inset-0 select-none" onContextMenu={(e) => e.preventDefault()}
         style={{ background: C.void, WebkitTouchCallout: "none", WebkitUserSelect: "none" }}>
         {GlobalCss}
