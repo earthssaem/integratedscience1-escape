@@ -30,6 +30,29 @@
   size-adjust: 115%;
   ascent-override: 70.4%;
   descent-override: 16.5%;
+  line-gap-override: 0%;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ================================================================
+   Press Start 2P Fixed — 글리프 세로 원점 보정판 (OFL 1.1, 원본과 픽셀 동일)
+   원본 PS2P는 8×8 그리드 설계상 글리프가 baseline보다 1/8em(125/1000유닛)
+   위에 그려져 있어, 둥근모 한글과 한 줄에 섞이면 영문/숫자만 떠 보임
+   ('통합과학D'의 D, '3D' 등). ascent/descent-override는 line box 계산에만
+   쓰이고 글리프 위치는 못 옮기므로(실측 검증), 외곽선 자체를 125유닛 내려
+   baseline에 안착시킨 로컬 사본을 사용. OFL Reserved Font Name 규정에 따라
+   내부 이름 변경, 라이선스 전문은 public/fonts/OFL-PressStart2P.txt 동봉.
+   결과 보고서 캔버스는 계속 원본 'Press Start 2P'(구글 폰트) 사용.
+   ================================================================ */
+@font-face {
+  font-family: "Press Start 2P Fixed";
+  src: url("/fonts/PressStart2P-Fixed.woff2") format("woff2");
+  /* line box를 원본 PS2P(리눅스/안드로이드 기준)와 동일하게 고정 — OS 간 편차 제거 */
+  ascent-override: 100%;
+  descent-override: 0%;
+  line-gap-override: 0%;
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -37,14 +60,14 @@
 
 :root {
   /* 제목·숫자·버튼 등 픽셀 게임 느낌 강조용
-     (영문/숫자 → Press Start 2P, 한글 → 보정판 둥근모 폴백) */
-  --font-pixel: "Press Start 2P", "DungGeunMo Adjusted", cursive;
+     (영문/숫자 → 보정판 PS2P, 한글 → 보정판 둥근모 폴백) */
+  --font-pixel: "Press Start 2P Fixed", "Press Start 2P", "DungGeunMo Adjusted", cursive;
 }
 
 /* Tailwind 유틸리티 폰트 매핑 — 앱 전반의 font-mono(HUD·타이머·버튼·라벨)를
    픽셀 폰트로, 기본 본문(font-sans)은 둥근모로 통일해 8비트 레트로 무드로 맞춘다 */
 @theme {
-  --font-mono: "Press Start 2P", "DungGeunMo Adjusted", cursive;
+  --font-mono: "Press Start 2P Fixed", "Press Start 2P", "DungGeunMo Adjusted", cursive;
   --font-sans: "DungGeunMo Adjusted", "Noto Sans KR", sans-serif;
 }
 
