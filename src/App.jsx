@@ -2545,11 +2545,15 @@ export default function App() {
           </div>
           <div className="rounded-xl p-4" style={{ background: C.panel, border: `1px solid ${C.line}` }}>
             <div className="font-mono text-xs mb-3" style={{ color: C.hud }}>승무원 등록</div>
-            <input type="text" placeholder="닉네임 (8자 이내)" value={profile.nick} maxLength={8}
+            <input type="text" placeholder="닉네임 (실명 ✕ · 8자 이내)" value={profile.nick} maxLength={8}
               onChange={(e) => setProfile({ ...profile, nick: e.target.value })}
               onKeyDown={(e) => { if (e.key === "Enter" && profile.nick.trim()) setScreen("prologue"); }}
-              className="w-full rounded-lg px-3 py-3 text-sm outline-none mb-1"
+              className="w-full rounded-lg px-3 py-3 text-sm outline-none mb-2"
               style={{ background: "#05070d", border: `1px solid ${C.line}`, color: C.text }} />
+            <div className="rounded-lg px-3 py-2 mb-2 text-xs font-bold"
+              style={{ background: "rgba(120,60,0,0.25)", border: `1px solid ${C.warn}55`, color: C.warn }}>
+              ⚠ 절대 실명을 입력하지 마세요! 반드시 별명(닉네임)으로만!
+            </div>
             <p className="text-xs mb-3" style={{ color: C.dim }}>
               닉네임은 탈출 완료 후 <b>결과 보고서</b>에 표시됩니다. 보고서 이미지를 저장해 선생님께 제출하세요.
             </p>
