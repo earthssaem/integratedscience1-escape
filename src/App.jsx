@@ -857,12 +857,13 @@ function FormationStep({ done, wrong, locked }) {
 
 /* ----- 4-1 지구시스템 상호작용 다이어그램 ----- */
 function WiringStep({ done, wrong, locked }) {
-  // 4개 권 좌표 (SVG 0~300 x 0~300)
+  // 4개 권 좌표 (SVG 0~320 x 0~292)
+  // 생물권을 삼각형 밖(위)으로 빼서 화살표·라벨이 어떤 원과도 겹치지 않게 배치
   const SPH = {
-    지권: { x: 78, y: 232, c: "#f5b78a", cd: "#c97b45" },
-    기권: { x: 150, y: 60, c: "#9ec9ef", cd: "#4b90c8" },
-    수권: { x: 222, y: 232, c: "#d8d2bf", cd: "#a49877" },
-    생물권: { x: 150, y: 168, c: "#a8dca0", cd: "#5aa84a" },
+    생물권: { x: 160, y: 38, c: "#a8dca0", cd: "#5aa84a" },
+    기권: { x: 160, y: 128, c: "#9ec9ef", cd: "#4b90c8" },
+    지권: { x: 66, y: 248, c: "#f5b78a", cd: "#c97b45" },
+    수권: { x: 254, y: 248, c: "#d8d2bf", cd: "#a49877" },
   };
   // 사용하는 양방향 화살표(권 쌍) — 옵션 1
   const EDGES = [
@@ -913,7 +914,7 @@ function WiringStep({ done, wrong, locked }) {
 
   return (
     <div>
-      <svg viewBox="0 0 300 300" style={{ width: "100%", maxWidth: 340, display: "block", margin: "0 auto 8px" }}>
+      <svg viewBox="0 0 320 292" style={{ width: "100%", maxWidth: 340, display: "block", margin: "0 auto 8px" }}>
         <defs>
           {["#3a4a5c", C.ok, C.hud].map((col, i) => (
             <marker key={i} id={"ah" + i} markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
@@ -938,6 +939,13 @@ function WiringStep({ done, wrong, locked }) {
                   <rect x={g.mx - 30} y={g.my - 9} width="60" height="18" rx="9"
                     fill={good ? "rgba(20,60,40,0.95)" : "rgba(10,20,35,0.95)"} stroke={good ? C.ok : C.hud} strokeWidth="0.8" />
                   <text x={g.mx} y={g.my + 3.5} textAnchor="middle" fontSize="9" fill={good ? C.ok : C.hud} fontFamily="monospace">{it.p}</text>
+                </g>
+              )}
+              {/* 카드 선택 중 + 빈 화살표 — 놓을 위치를 ? 로 표시 (탭 타깃 확대) */}
+              {!it && selCard != null && (
+                <g>
+                  <circle cx={g.mx} cy={g.my} r="11" fill="rgba(20,70,90,0.92)" stroke={C.hud} strokeWidth="1" />
+                  <text x={g.mx} y={g.my + 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill={C.hud} fontFamily="monospace">?</text>
                 </g>
               )}
             </g>
@@ -1104,18 +1112,26 @@ function WaterDiagram() {
           <marker id="wup" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#60a5fa" /></marker>
           <marker id="wdn" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#94a3b8" /></marker>
         </defs>
-        {/* 증발 (바다→대기 320, 육지→대기 60) : 유입 */}
-        <line x1="62" y1="120" x2="98" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
-        <text x="52" y="90" fontSize="11" fill="#60a5fa" fontFamily="monospace" fontWeight="bold">↑320</text>
-        <line x1="200" y1="120" x2="150" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
-        <text x="176" y="88" fontSize="11" fill="#60a5fa" fontFamily="monospace" fontWeight="bold">↑60</text>
-        {/* 강수 (대기→바다 284, 대기→육지 96) : 유출 */}
-        <line x1="118" y1="44" x2="88" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
-        <text x="92" y="90" fontSize="11" fill="#94a3b8" fontFamily="monospace" fontWeight="bold">↓284</text>
-        <line x1="222" y1="44" x2="240" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
-        <text x="238" y="88" fontSize="11" fill="#94a3b8" fontFamily="monospace" fontWeight="bold">↓96</text>
+        {/* 증발 (바다→대기 320, 육지→대기 60) : 유입 / 강수 (대기→바다 284, 대기→육지 96) : 유출
+            숫자 라벨은 선 중앙의 어두운 알약 배경 위에 얹어 선과 겹쳐도 읽히게 처리 */}
+        <line x1="50" y1="120" x2="74" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
+        <line x1="124" y1="44" x2="104" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
+        <line x1="190" y1="120" x2="166" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
+        <line x1="234" y1="44" x2="252" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
+        {[
+          { x: 62, y: 83, t: "↑320", c: "#60a5fa", w: 46 },
+          { x: 114, y: 82, t: "↓284", c: "#94a3b8", w: 46 },
+          { x: 178, y: 83, t: "↑60", c: "#60a5fa", w: 38 },
+          { x: 243, y: 82, t: "↓96", c: "#94a3b8", w: 38 },
+        ].map((L) => (
+          <g key={L.t}>
+            <rect x={L.x - L.w / 2} y={L.y - 8.5} width={L.w} height="17" rx="8.5"
+              fill="rgba(4,8,16,0.92)" stroke={L.c} strokeWidth="0.8" />
+            <text x={L.x} y={L.y + 3.5} textAnchor="middle" fontSize="10" fill={L.c} fontFamily="monospace" fontWeight="bold">{L.t}</text>
+          </g>
+        ))}
       </svg>
-      <div className="flex justify-center gap-4 font-mono" style={{ fontSize: 10 }}>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-0.5 font-mono" style={{ fontSize: 10 }}>
         <span style={{ color: "#60a5fa" }}>↑ 증발 (대기로 유입)</span>
         <span style={{ color: "#94a3b8" }}>↓ 강수 (대기에서 유출)</span>
       </div>
@@ -2406,7 +2422,7 @@ export default function App() {
       @keyframes arkheRumble {0%{transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}100%{transform:translate(0,0)}}
       select option{background:#05070d;color:#8be9fd;}
       input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
-      html,body{overscroll-behavior:none;}
+      html,body{overscroll-behavior:none;overflow-x:hidden;}
     `}</style>
   );
 
