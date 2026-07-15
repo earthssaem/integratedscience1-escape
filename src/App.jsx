@@ -2528,6 +2528,10 @@ export default function App() {
       select option{background:#05070d;color:#8be9fd;}
       input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
       html,body{overscroll-behavior:none;overflow-x:hidden;}
+      /* 태블릿 길게 누르기 대응: 버튼·캔버스에서 iOS/안드로이드 콜아웃 차단,
+         단 입력창은 텍스트 편집·선택 가능하게 예외 */
+      button,canvas{-webkit-touch-callout:none;}
+      input,textarea{-webkit-user-select:text;user-select:text;}
     `}</style>
   );
 
@@ -2652,7 +2656,10 @@ export default function App() {
       </button>
     );
     return (
-      <div className="fixed inset-0" style={{ background: C.void }}>
+      {/* select-none + 콜아웃/컨텍스트 메뉴 차단 — 태블릿에서 방향키 등을
+          길게 눌러도 텍스트 선택·공유/인쇄 메뉴가 뜨지 않게 */}
+      <div className="fixed inset-0 select-none" onContextMenu={(e) => e.preventDefault()}
+        style={{ background: C.void, WebkitTouchCallout: "none", WebkitUserSelect: "none" }}>
         {GlobalCss}
         <canvas ref={canvasRef} className="w-full h-full block" style={{ touchAction: "none" }} />
         {/* 크로스헤어 */}
