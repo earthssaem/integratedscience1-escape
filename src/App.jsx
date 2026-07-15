@@ -76,7 +76,7 @@ const STEPS = [
   {
     room: 2, kind: "blackhole", label: "MISSION 3-1 · 회피 기동",
     intro: "점프 항로 전방에서 거대한 별이 진화의 마지막 단계에 접어들었습니다. 주계열성일 때 질량이 태양의 약 25배였던 별입니다. 진화 경로의 마지막 갈림길을 채워, 이 별이 무엇이 되는지 판단하십시오.",
-    hint: "주계열성일 때 질량이 태양의 10~20배이면 중성자별, 20배 이상이면 더 무거운 천체가 됩니다. 빛조차 빠져나오지 못하는…",
+    hint: "주계열성일 때 질량이 태양의 10~20배면 중성자별, 20배 이상이면 블랙홀입니다. 이 별은 25배입니다.",
     success: "블랙홀 형성 예측 — 회피 기동 성공. 사건의 지평선을 스치듯 통과했습니다. 목표: 46억 년 전, 원시 지구.",
   },
   {
@@ -777,8 +777,8 @@ function BlackholeStep({ done, wrong, locked }) {
             <div className="text-center font-mono my-1" style={{ color: C.dim }}>▼</div>
             <div className="rounded-md py-2 text-center font-mono text-sm font-bold" style={{ background: "rgba(0,0,0,0.3)", color: "#a5b4fc" }}>중성자별</div>
           </div>
-          <div className="rounded-lg p-2" style={{ background: "rgba(60,20,50,0.4)", border: `1px solid ${pick === "블랙홀" ? C.ok : C.warn + "66"}` }}>
-            <div className="font-mono text-center" style={{ color: C.dim, fontSize: 10 }}>주계열성 질량<br /><b style={{ color: C.warn }}>태양의 20배 이상</b></div>
+          <div className="rounded-lg p-2" style={{ background: "rgba(60,20,50,0.55)", border: `1px solid ${pick === "블랙홀" ? C.ok : C.warn}`, boxShadow: pick === "블랙홀" ? "none" : `0 0 10px ${C.warn}44` }}>
+            <div className="font-mono text-center" style={{ color: C.dim, fontSize: 10 }}>주계열성 질량<br /><b style={{ color: C.warn }}>태양의 20배 이상</b> ◀ 이 별</div>
             <div className="text-center font-mono my-1" style={{ color: C.dim }}>▼</div>
             <div className="rounded-md py-2 text-center font-mono text-sm font-bold"
               style={{ background: pick === "블랙홀" ? "rgba(30,80,50,0.5)" : "rgba(0,0,0,0.3)", color: pick === "블랙홀" ? C.ok : C.warn, border: `1px dashed ${pick === "블랙홀" ? C.ok : C.warn}` }}>
@@ -787,7 +787,7 @@ function BlackholeStep({ done, wrong, locked }) {
           </div>
         </div>
       </div>
-      <div className="font-mono text-xs mb-2 text-center" style={{ color: C.text }}>주계열성일 때 질량이 태양의 20배 이상인 별의 최후는?</div>
+      <div className="font-mono text-xs mb-2 text-center" style={{ color: C.text }}>이 별(주계열성일 때 태양 질량의 25배)의 최후는?</div>
       <div className="grid gap-2">
         {OPTIONS.map((op) => (
           <button key={op} onClick={() => choose(op)}
