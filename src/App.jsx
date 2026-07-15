@@ -989,55 +989,106 @@ function WiringStep({ done, wrong, locked }) {
   );
 }
 
-/* ----- 5-1 지진대/화산대 스캔 ----- */
+/* ----- 5-1 지진대/화산대 스캔 — 세계지도 모식도 ----- */
+/* 정거원통도법: x=(경도+180)/360*300, y=(90-위도)/180*150 */
+const SCAN_LAND = [
+  // 북아메리카
+  "M14,29 L28,19 L54,16 L78,17 L100,21 L106,27 L99,33 L88,35 L82,43 L76,50 L70,57 L64,60 L60,52 L54,46 L46,44 L36,41 L25,37 Z",
+  // 중앙아메리카
+  "M69,57 L77,62 L83,67 L85,70 L80,70 L73,64 L66,59 Z",
+  // 남아메리카
+  "M84,69 L93,66 L101,69 L105,75 L106,85 L102,97 L96,109 L90,119 L86,121 L84,111 L80,99 L78,87 L80,77 Z",
+  // 그린란드
+  "M106,10 L120,7 L132,10 L130,18 L122,24 L112,22 L106,16 Z",
+  // 유럽
+  "M140,26 L152,22 L168,20 L180,24 L182,32 L176,38 L166,42 L156,44 L148,42 L142,36 Z",
+  // 아프리카
+  "M136,50 L150,46 L166,45 L180,48 L186,54 L184,62 L180,70 L176,80 L172,90 L166,100 L160,104 L154,98 L150,88 L146,78 L142,68 L138,58 Z",
+  // 아시아
+  "M182,20 L200,14 L230,12 L260,14 L280,18 L292,24 L288,32 L278,38 L268,44 L258,50 L250,58 L244,64 L238,58 L230,50 L220,44 L208,40 L196,36 L186,30 Z",
+  // 인도 반도
+  "M221,47 L233,50 L235,58 L229,65 L224,58 Z",
+  // 인도네시아
+  "M248,72 L262,71 L268,74 L262,77 L250,76 Z",
+  // 일본
+  "M264,42 L269,46 L272,52 L268,51 L264,46 Z",
+  // 오스트레일리아
+  "M248,86 L262,84 L274,88 L278,96 L272,104 L260,106 L250,100 L246,92 Z",
+  // 남극
+  "M0,141 L300,141 L300,150 L0,150 Z",
+];
+/* 판 경계 벨트 (연속 폴리라인) */
+const BELT_RING_A = [[87.5,112.5],[90,104],[91.7,92],[85,79],[83.3,71],[77.5,64],[70.8,62],[62.5,58],[54.2,50],[45.8,40],[41.7,33],[33.3,27],[25,25],[16.7,29],[8.3,32]];
+const BELT_RING_B = [[300,33],[283,32],[275,37.5],[266.7,46],[262.5,50],[258.3,58],[254.2,67],[251.7,75],[258.3,79],[266.7,79],[275,82],[283.3,87.5],[295.8,100],[298.3,107]];
+const BELT_ALPIDE = [[145.8,45],[162.5,43],[175,43],[187.5,43],[200,46],[212.5,48],[225,52],[233.3,58],[241.7,71],[248.3,77]];
+const BELT_MAR = [[129.2,21],[125,33],[123.3,50],[125,67],[129.2,83],[137.5,100],[141.7,112.5]];
+const BELT_EAR = [[179.2,67],[180,75],[179.2,83]];
+/* 폴리라인을 일정 간격으로 샘플링 */
+function sampleBelt(poly, gap) {
+  const out = []; let carry = 0;
+  for (let i = 0; i < poly.length - 1; i++) {
+    const [x1, y1] = poly[i], [x2, y2] = poly[i + 1];
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    for (let d = carry; d < len; d += gap) {
+      const t = d / len;
+      out.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t]);
+    }
+    carry = (carry - len) % gap; if (carry < 0) carry += gap;
+  }
+  return out;
+}
 function ScanStep({ step, done, wrong, locked }) {
   const [phase, setPhase] = useState(0); // 0 지진 1 화산 2 질문
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 1600);
-    const t2 = setTimeout(() => setPhase(2), 3200);
+    const t1 = setTimeout(() => setPhase(1), 1800);
+    const t2 = setTimeout(() => setPhase(2), 3600);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
-  // 환태평양 '불의 고리' 근사 좌표 (0-300 x 0-150)
-  const RING = [
-    [30,38],[42,30],[58,26],[76,24],[95,28],[110,40],[118,58],[122,78],[118,98],[110,114],
-    [216,110],[224,92],[230,72],[236,54],[246,40],[262,34],[278,30],
-    [150,120],[168,116],[186,112],[200,110],
-  ];
-  const ALPIDE = [[150,60],[168,58],[186,56],[204,58],[220,62]];
-  const MID = [[150,86],[152,100],[148,72]];
-  const ALL = [...RING, ...ALPIDE, ...MID];
+  const BELTS = [BELT_RING_A, BELT_RING_B, BELT_ALPIDE, BELT_MAR, BELT_EAR];
+  // 지진: 모든 판 경계 (해령·변환단층 포함 → 더 광범위)
+  const quakes = useMemo(() => BELTS.flatMap((b) => sampleBelt(b, 5.5)), []);
+  // 화산: 주로 환태평양 + 알프스-히말라야 (해령 대부분 해저 → 아이슬란드만)
+  const volcanoes = useMemo(() =>
+    [...sampleBelt(BELT_RING_A, 11), ...sampleBelt(BELT_RING_B, 11), ...sampleBelt(BELT_ALPIDE, 14), [129.2, 21]], []);
+  const pl = (poly) => poly.map((p) => p.join(",")).join(" ");
   return (
     <div>
-      <div className="rounded-lg p-2 mb-3 relative overflow-hidden" style={{ background: "#03110f", border: `1px solid ${C.line}` }}>
-        <div className="font-mono text-xs px-1 pt-1 flex justify-between" style={{ color: "#2dd4bf" }}>
-          <span>SURFACE SCAN</span>
-          <span>{phase === 0 ? "지진 분포 수신 중…" : phase === 1 ? "화산 분포 수신 중…" : "분석 완료 — 분포 일치"}</span>
+      <div className="rounded-lg p-2 mb-3 relative overflow-hidden" style={{ background: "#020e0d", border: `1px solid ${C.line}` }}>
+        <div className="font-mono px-1 pt-1 flex justify-between" style={{ color: "#2dd4bf", fontSize: 10 }}>
+          <span>SURFACE SCAN · 전 지구 위험 분포</span>
+          <span className={phase < 2 ? "animate-pulse" : ""}>
+            {phase === 0 ? "지진 분포 수신 중…" : phase === 1 ? "화산 분포 중첩 중…" : "▶ 분포 일치 — 띠 모양 확인"}
+          </span>
         </div>
         <svg viewBox="0 0 300 150" style={{ width: "100%", display: "block" }}>
-          {/* 격자 */}
-          {[30,60,90,120].map((y) => <line key={"h"+y} x1="0" y1={y} x2="300" y2={y} stroke="#0d3a33" strokeWidth="0.5" />)}
-          {[50,100,150,200,250].map((x) => <line key={"v"+x} x1={x} y1="0" x2={x} y2="150" stroke="#0d3a33" strokeWidth="0.5" />)}
-          {/* 대륙 실루엣 (간이) */}
-          <g fill="#0f4a3f" opacity="0.8">
-            <path d="M35,35 q20,-12 45,-8 q18,4 22,20 q3,16 -8,28 q-12,10 -14,26 q-2,14 -10,18 q-10,-6 -14,-22 q-4,-18 -12,-30 q-8,-14 -9,-32z" />
-            <path d="M108,96 q10,-4 16,4 q6,10 2,24 q-4,12 -12,16 q-8,-8 -9,-22 q-1,-14 3,-22z" />
-            <path d="M148,30 q26,-10 56,-6 q26,4 34,18 q6,12 -2,22 q-12,12 -30,12 q-20,2 -36,-6 q-16,-8 -22,-22 q-4,-12 0,-18z" />
-            <path d="M158,70 q12,-2 18,8 q6,12 2,26 q-4,14 -14,18 q-10,-4 -13,-18 q-3,-16 -3,-34z" />
-            <path d="M222,104 q12,-6 22,0 q8,6 4,16 q-6,10 -18,10 q-10,-2 -12,-12 q-2,-8 4,-14z" />
+          {/* 경위선 격자 */}
+          {[15,30,45,60,75,90,105,120,135].map((y) => <line key={"h"+y} x1="0" y1={y} x2="300" y2={y} stroke="#0a2a26" strokeWidth="0.4" />)}
+          {[25,50,75,100,125,150,175,200,225,250,275].map((x) => <line key={"v"+x} x1={x} y1="0" x2={x} y2="150" stroke="#0a2a26" strokeWidth="0.4" />)}
+          <line x1="0" y1="75" x2="300" y2="75" stroke="#14524a" strokeWidth="0.7" strokeDasharray="3 2" />
+          {/* 대륙 */}
+          <g fill="#0e3f36" stroke="#1d6b5a" strokeWidth="0.6">
+            {SCAN_LAND.map((d, i) => <path key={i} d={d} />)}
           </g>
-          {/* 지진 (점) */}
-          {phase >= 0 && ALL.map(([x, y], i) => (
-            <circle key={"q" + i} cx={x} cy={y} r="2.4" fill="#f87171"
-              style={{ animation: `arkheTwinkle 2.4s ease-in-out infinite`, animationDelay: (i * 0.05) + "s" }} />
+          {/* 위험 띠 하이라이트 (분석 완료 시) */}
+          {phase >= 2 && BELTS.map((b, i) => (
+            <polyline key={"band" + i} points={pl(b)} fill="none" stroke="#f472b6" strokeWidth="9"
+              strokeLinecap="round" strokeLinejoin="round" opacity="0.16" />
           ))}
-          {/* 화산 (삼각형) — 살짝 어긋난 위치, 같은 띠 */}
-          {phase >= 1 && ALL.filter((_, i) => i % 2 === 0).map(([x, y], i) => (
-            <polygon key={"v" + i} points={`${x + 3},${y - 6} ${x - 1},${y + 1} ${x + 7},${y + 1}`} fill="#fbbf24" opacity="0.95" />
+          {/* 지진 (붉은 점) */}
+          {quakes.map(([x, y], i) => (
+            <circle key={"q" + i} cx={x} cy={y} r="1.7" fill="#f87171" opacity="0.95"
+              style={{ animation: "arkheTwinkle 2.6s ease-in-out infinite", animationDelay: (i * 0.012) + "s" }} />
+          ))}
+          {/* 화산 (노란 삼각형) */}
+          {phase >= 1 && volcanoes.map(([x, y], i) => (
+            <polygon key={"v" + i} points={`${x},${y - 4.2} ${x - 3.4},${y + 2} ${x + 3.4},${y + 2}`}
+              fill="#fbbf24" stroke="#7c2d12" strokeWidth="0.4" opacity="0.95" />
           ))}
         </svg>
-        <div className="font-mono text-xs px-1 pb-1 flex gap-3" style={{ color: C.dim }}>
+        <div className="font-mono px-1 pb-1 flex gap-3" style={{ color: C.dim, fontSize: 10 }}>
           <span><span style={{ color: "#f87171" }}>●</span> 지진 다발</span>
           {phase >= 1 && <span><span style={{ color: "#fbbf24" }}>▲</span> 화산 다발</span>}
+          {phase >= 2 && <span style={{ color: "#f472b6" }}>▬ 위험 지대(띠)</span>}
         </div>
       </div>
       {phase >= 2
