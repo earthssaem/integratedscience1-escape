@@ -2103,7 +2103,7 @@ export default function App() {
   const [finalSec, setFinalSec] = useState(0);
   const [report, setReport] = useState(null); // 생성된 보고서 이미지 {url, fname}
   const [inv, setInv] = useState([]); // 수집한 데이터패드 {label, text, room}
-  const [invOpen, setInvOpen] = useState(false); // 인벤토리 패널 열림
+  const [invOpen, setInvOpen] = useState(true); // 인벤토리 패널 열림 (기본 펼침)
   const [invNew, setInvNew] = useState(false); // 새 아이템 알림 점멸
   const [confirmExit, setConfirmExit] = useState(false); // 처음 화면 나가기 확인
   const [saveData, setSaveData] = useState(() => loadSave()); // 이어하기용 저장 기록
@@ -2271,7 +2271,7 @@ export default function App() {
     setSolved(new Set()); setEggs(new Set()); setRoomIdx(0);
     setPenalty(0); setWrongCnt(0); setHintCnt(0); setElapsed(0);
     setModal(null); setReport(null); setStartTs(Date.now());
-    setInv([]); setInvOpen(false); setInvNew(false); setConfirmExit(false);
+    setInv([]); setInvOpen(true); setInvNew(false); setConfirmExit(false);
     setBanner(null); setRoomTimes([]); setRoomStart(0);
     setTut(true); setDragHint(true);
     setDlg(null); pendingRef.current = null; introRef.current = false;
@@ -2288,7 +2288,7 @@ export default function App() {
     setRoomIdx(d.roomIdx);
     setPenalty(d.penalty || 0); setWrongCnt(d.wrongCnt || 0); setHintCnt(d.hintCnt || 0);
     setElapsed(d.elapsed || 0); setStartTs(Date.now() - (d.elapsed || 0) * 1000);
-    setModal(null); setReport(null); setInvOpen(false); setInvNew(false); setConfirmExit(false);
+    setModal(null); setReport(null); setInvOpen(true); setInvNew(false); setConfirmExit(false);
     setBanner(null); setRoomTimes(d.roomTimes || []); setRoomStart(d.roomStart || 0);
     setTut(false); setDragHint(false);
     setDlg(null); pendingRef.current = null; introRef.current = true;
@@ -2353,6 +2353,14 @@ export default function App() {
           setAiTone("hint");
           setAiMsg("✦ 미확인 크로노 크리스털 신호가 이 방 어딘가에 남아 있습니다. 게이트 진입 전에 찾으면 기록 -20초.");
         }, 2700);
+      }
+    } else if (modal && modal.kind === "puzzle" && solvedRef.current.has(modal.step)) {
+      // 미션은 풀었지만 방에 임무가 남음 — 다음 목표 장치 안내
+      const next = WORLDS[roomIdx].props.find((p) => !solvedRef.current.has(p.step));
+      const remain = req.filter((s) => !solvedRef.current.has(s)).length;
+      if (next) {
+        setAiTone("");
+        setAiMsg(`다음 목표 — 「${next.label}」. 방 안에서 빛나는 장치를 찾아 조사하십시오. (남은 임무 ${remain}건)`);
       }
     }
   };
@@ -2498,6 +2506,7 @@ export default function App() {
     const W = WORLDS[roomIdx];
     const room = ROOMS[roomIdx];
     const req = W.props.map((p) => p.step);
+    const nextProp = W.props.find((p) => !solved.has(p.step)); // 이 방의 다음 목표 장치
     const modalStep = modal && modal.kind === "puzzle" ? STEPS[modal.step] : null;
     const dpad = (k, sym, cls) => (
       <button key={k} className={"rounded-lg font-mono font-bold text-lg select-none " + cls}
@@ -2541,11 +2550,28 @@ export default function App() {
             <div className="font-mono text-sm" style={{ color: C.dim }}>
               {room.name}<br /><span style={{ color: C.warn }}>{room.era}</span>
               <div className="mt-1.5">
-                {req.map((s) => (
-                  <div key={s} style={{ color: solved.has(s) ? C.ok : C.dim, fontSize: 12 }}>
-                    {solved.has(s) ? "■" : "□"} {STEP_SHORT[s]}
+                {/* 남은 임무 목록 — 다음 목표(▶)에는 조사할 장치 이름을 함께 표시 */}
+                {W.props.map((p) => {
+                  const isDone = solved.has(p.step);
+                  const isNext = !isDone && nextProp && nextProp.step === p.step;
+                  return (
+                    <div key={p.step} style={{ fontSize: 12 }}>
+                      <span style={{ color: isDone ? C.ok : isNext ? C.hud : C.dim }}>
+                        {isDone ? "■" : isNext ? "▶" : "□"} {STEP_SHORT[p.step]}
+                      </span>
+                      {isNext && (
+                        <div className="animate-pulse" style={{ color: C.warn, fontSize: 11, paddingLeft: 15 }}>
+                          ↳ 「{p.label}」 찾아서 조사!
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {!nextProp && (
+                  <div className="animate-pulse" style={{ color: C.warn, fontSize: 12 }}>
+                    ▶ 점프 게이트로 진입!
                   </div>
-                ))}
+                )}
                 <div style={{ color: "#ff8ae0", fontSize: 12 }}>✦ 크리스털 {eggs.size}/5</div>
               </div>
             </div>
@@ -2630,7 +2656,7 @@ export default function App() {
                 const isCard = it.kind === "card";
                 return (
                   <button key={(isCard ? "c:" : "m:") + it.label}
-                    onClick={() => { setInvOpen(false); setModal({ kind: "memo", label: it.label, text: it.text, card: isCard }); }}
+                    onClick={() => setModal({ kind: "memo", label: it.label, text: it.text, card: isCard })}
                     className="w-full rounded-lg px-2.5 py-2 mb-1.5 text-left transition-all active:scale-95"
                     style={{
                       background: isCard ? "rgba(8,50,30,0.45)" : "rgba(10,25,40,0.5)",
