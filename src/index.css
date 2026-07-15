@@ -1,10 +1,35 @@
 @import "tailwindcss";
 
-/* DungGeunMo(둥근모) — 한글 픽셀 폰트. 구글폰트에 없어 jsDelivr CDN에서 직접 로드 */
+/* ================================================================
+   DungGeunMo(둥근모) — 한글 픽셀 폰트 (Public Domain)
+   CDN(jsDelivr) 차단 환경(학교망 등) 대비, 프로젝트에 로컬 번들.
+   ================================================================ */
+
+/* 원본 메트릭 그대로 — 결과 보고서 캔버스(buildReportCanvas)에서 사용 */
 @font-face {
   font-family: "DungGeunMo";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff")
-    format("woff");
+  src: url("/fonts/DungGeunMo.woff2") format("woff2"),
+    url("/fonts/DungGeunMo.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Press Start 2P와 한 줄에 섞일 때의 메트릭 보정판 — UI 전반에서 사용.
+   [실측 근거 · 100px 기준 canvas 측정]
+   · PS2P: 대문자/숫자 높이 87.5px, 글리프 바닥이 baseline +13px에 뜸(8×8 그리드 설계)
+   · DGM : 한글 높이 82px(-75~+7px) → PS2P 옆에서 작고 낮아 보임
+   · size-adjust 115% → 한글 체감 크기가 숫자/대문자와 균형 (106/115/125% 비교 실측 결과)
+   · ascent/descent-override: Chrome이 size-adjust를 곱해 적용하므로
+     원본 라인 메트릭(81%/19%)을 1.15로 나눈 값을 지정
+     → 최종 line box가 보정 전과 동일(0.81/0.19em)해 레이아웃 변화 없음 */
+@font-face {
+  font-family: "DungGeunMo Adjusted";
+  src: url("/fonts/DungGeunMo.woff2") format("woff2"),
+    url("/fonts/DungGeunMo.woff") format("woff");
+  size-adjust: 115%;
+  ascent-override: 70.4%;
+  descent-override: 16.5%;
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -12,15 +37,15 @@
 
 :root {
   /* 제목·숫자·버튼 등 픽셀 게임 느낌 강조용
-     (영문/숫자 → Press Start 2P, 한글 → DungGeunMo 폴백) */
-  --font-pixel: "Press Start 2P", "DungGeunMo", cursive;
+     (영문/숫자 → Press Start 2P, 한글 → 보정판 둥근모 폴백) */
+  --font-pixel: "Press Start 2P", "DungGeunMo Adjusted", cursive;
 }
 
 /* Tailwind 유틸리티 폰트 매핑 — 앱 전반의 font-mono(HUD·타이머·버튼·라벨)를
    픽셀 폰트로, 기본 본문(font-sans)은 둥근모로 통일해 8비트 레트로 무드로 맞춘다 */
 @theme {
-  --font-mono: "Press Start 2P", "DungGeunMo", cursive;
-  --font-sans: "DungGeunMo", "Noto Sans KR", sans-serif;
+  --font-mono: "Press Start 2P", "DungGeunMo Adjusted", cursive;
+  --font-sans: "DungGeunMo Adjusted", "Noto Sans KR", sans-serif;
 }
 
 html,
@@ -34,5 +59,5 @@ body,
 
 body {
   /* 기본 본문 — 한글/영문 모두 둥근모(픽셀), 미로드 시 Noto Sans KR로 폴백 */
-  font-family: "DungGeunMo", "Noto Sans KR", sans-serif;
+  font-family: "DungGeunMo Adjusted", "Noto Sans KR", sans-serif;
 }
