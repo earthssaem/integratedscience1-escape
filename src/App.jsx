@@ -81,9 +81,9 @@ const STEPS = [
   },
   {
     room: 2, kind: "formation", label: "MISSION 3-2 · 지구 형성 과정 복원",
-    intro: "원시 지구 상공 도착. 지표 전체가 마그마 바다입니다. 미래의 착륙 지점을 예측하려면, 이 행성이 어떻게 만들어지는지 형성 과정을 순서대로 복원해야 합니다. 가장 먼저 일어난 사건부터 순서대로 선택하십시오.",
-    hint: "충돌로 지구가 뭉치고 → 열로 전체가 녹고 → 무거운 물질이 가라앉아 핵을, 가벼운 물질이 떠올라 맨틀을 이루고 → 식으면서 지각과 바다가 생깁니다.",
-    success: "형성 과정 복원 완료. 무거운 철·니켈은 가라앉아 핵을, 가벼운 규산염은 떠올라 맨틀을 이룹니다. 지각이 식고 바다가 생기면 — 최초의 생명이 깨어납니다. 다음 점프, 현재.",
+    intro: "원시 지구 상공 도착. 지표 전체가 마그마 바다입니다. 미래의 착륙 지점을 예측하려면, 이 행성이 어떻게 만들어지는지 형성 과정을 순서대로 복원해야 합니다. 카드를 위아래로 드래그해 가장 먼저 일어난 사건부터 순서대로 정렬하십시오.",
+    hint: "미행성체가 충돌해 지구가 뭉치고 → 충돌열로 전체가 녹아 마그마 바다가 되고 → 무거운 철·니켈은 핵으로, 가벼운 규산염은 맨틀로 분리되고 → 표면이 식으며 지각과 바다가 생깁니다.",
+    success: "형성 과정 복원 완료. 핵과 맨틀이 분리되고, 표면이 식어 바다가 생기면 최초의 생명이 깨어납니다. 다음 점프, 현재.",
   },
   {
     room: 3, kind: "wiring", label: "MISSION 4-1 · 시스템 상호작용 인증",
@@ -803,54 +803,108 @@ function BlackholeStep({ done, wrong, locked }) {
 
 /* ----- 3-2 지구 형성 과정 순서 배열 ----- */
 function FormationStep({ done, wrong, locked }) {
-  const CORRECT = [
+  // 교과서 기준 4단계 (정답 순서) — 침강·상승은 동시 현상이므로 '맨틀과 핵의 분리' 한 단계로 통합
+  const STAGES = [
     { k: "미행성체 충돌", d: "충돌로 뭉쳐 원시 지구 형성" },
-    { k: "마그마 바다", d: "충돌열로 지구 전체가 녹음" },
-    { k: "무거운 물질 침강", d: "철·니켈이 가라앉아 핵 형성" },
-    { k: "가벼운 물질 상승", d: "규산염이 떠올라 맨틀 형성" },
-    { k: "원시 지각·바다", d: "표면이 식고 바다·생명 탄생" },
+    { k: "마그마 바다 형성", d: "충돌열로 지구 전체가 녹음" },
+    { k: "맨틀과 핵의 분리", d: "무거운 철·니켈은 핵으로, 가벼운 규산염은 맨틀로" },
+    { k: "원시 지각과 원시 바다의 형성", d: "표면이 식어 지각과 바다 형성" },
   ];
-  const [pool] = useState(() => shuffle(CORRECT.map((c) => c.k)));
-  const [placed, setPlaced] = useState([]);
-  const DMAP = Object.fromEntries(CORRECT.map((c) => [c.k, c.d]));
-  const tap = (k) => {
-    if (locked || placed.includes(k)) return;
-    if (k === CORRECT[placed.length].k) {
-      const next = [...placed, k];
-      setPlaced(next);
-      if (next.length === CORRECT.length) done();
-    } else wrong();
+  const DMAP = Object.fromEntries(STAGES.map((s) => [s.k, s.d]));
+  const [order, setOrder] = useState(() => {
+    // 처음부터 정답 순서로 나오지 않게 재셔플
+    let o;
+    do { o = shuffle(STAGES.map((s) => s.k)); } while (o.every((k, i) => k === STAGES[i].k));
+    return o;
+  });
+  // 드래그 상태: idx(잡은 카드), y0(시작 Y), dy(이동량), mids(각 행 중심 Y), target(놓일 위치)
+  const [drag, setDrag] = useState(null);
+  const listRef = useRef(null);
+
+  const calcTarget = (idx, mids, dy) => {
+    const c = mids[idx] + dy;
+    let t = 0;
+    mids.forEach((m, j) => { if (j !== idx && m < c) t++; });
+    return t;
   };
+  // HTML5 DnD는 터치 미지원 → pointer 이벤트로 직접 구현 (마우스·터치·펜 공통)
+  const startDrag = (i) => (e) => {
+    if (locked) return;
+    const rows = [...listRef.current.querySelectorAll("[data-row]")];
+    const mids = rows.map((r) => { const b = r.getBoundingClientRect(); return b.top + b.height / 2; });
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* 미지원 브라우저 무시 */ }
+    setDrag({ idx: i, y0: e.clientY, dy: 0, mids, target: calcTarget(i, mids, 0) });
+  };
+  const moveDrag = (e) => {
+    setDrag((d) => (d ? { ...d, dy: e.clientY - d.y0, target: calcTarget(d.idx, d.mids, e.clientY - d.y0) } : d));
+  };
+  const endDrag = () => {
+    if (drag) {
+      const { idx, target } = drag;
+      setOrder((o) => {
+        const item = o[idx];
+        const rest = o.filter((_, j) => j !== idx);
+        rest.splice(target, 0, item);
+        return rest;
+      });
+    }
+    setDrag(null);
+  };
+  const check = () => {
+    if (locked || drag) return;
+    order.every((k, i) => k === STAGES[i].k) ? done() : wrong();
+  };
+
+  // 놓일 자리 표시: target번째 비드래그 행 위(또는 마지막 아래)에 표시선
+  const nonDragIdx = drag ? order.map((_, i) => i).filter((i) => i !== drag.idx) : [];
+  const barAbove = drag && drag.target < nonDragIdx.length ? nonDragIdx[drag.target] : -1;
+  const barBelow = drag && drag.target >= nonDragIdx.length ? nonDragIdx[nonDragIdx.length - 1] : -1;
+  const dropBar = (pos) => (
+    <div style={{
+      position: "absolute", left: 6, right: 6, [pos]: -6, height: 4, borderRadius: 2,
+      background: C.hud, boxShadow: `0 0 10px ${C.hud}`, pointerEvents: "none",
+    }} />
+  );
   return (
     <div>
-      <div className="grid gap-1 mb-3">
-        {CORRECT.map((_, i) => {
-          const k = placed[i];
+      <div ref={listRef} className="mb-3">
+        {order.map((k, i) => {
+          const isDrag = drag && drag.idx === i;
           return (
-            <div key={i} className="flex items-center gap-2 rounded-md px-2 py-2"
-              style={{ border: `1px ${k ? "solid" : "dashed"} ${k ? C.ok + "66" : C.line}`, background: k ? "rgba(30,80,50,0.25)" : "rgba(0,0,0,0.25)" }}>
-              <span className="font-mono text-xs w-4 text-center" style={{ color: k ? C.ok : C.dim }}>{i + 1}</span>
-              {k ? (
-                <div><div className="text-sm font-bold" style={{ color: C.ok }}>{k}</div><div style={{ color: C.dim, fontSize: 10 }}>{DMAP[k]}</div></div>
-              ) : <span className="text-xs font-mono" style={{ color: C.dim }}>{i + 1}번째 사건</span>}
+            <div key={k} data-row
+              onPointerDown={startDrag(i)} onPointerMove={moveDrag}
+              onPointerUp={endDrag} onPointerCancel={endDrag}
+              onContextMenu={(e) => e.preventDefault()}
+              className="flex items-center gap-2 rounded-lg px-2.5 py-2.5 mb-1.5 select-none"
+              style={{
+                position: "relative",
+                border: `1px solid ${isDrag ? C.hud : C.line}`,
+                background: isDrag ? "rgba(18,55,75,0.85)" : C.panel,
+                touchAction: "none", // 카드 위 터치가 화면 스크롤로 새지 않게
+                cursor: locked ? "default" : isDrag ? "grabbing" : "grab",
+                transform: isDrag ? `translateY(${drag.dy}px) scale(1.02)` : "none",
+                zIndex: isDrag ? 10 : 1,
+                opacity: isDrag ? 0.88 : 1,
+                boxShadow: isDrag ? "0 10px 24px rgba(0,0,0,0.6)" : "none",
+              }}>
+              {barAbove === i && dropBar("top")}
+              {barBelow === i && dropBar("bottom")}
+              <span className="font-mono text-xs w-4 text-center shrink-0" style={{ color: isDrag ? C.hud : C.dim }}>{i + 1}</span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold" style={{ color: isDrag ? C.hud : C.text }}>{k}</div>
+                <div style={{ color: C.dim, fontSize: 10 }}>{DMAP[k]}</div>
+              </div>
+              <span className="font-mono shrink-0" style={{ color: C.dim, fontSize: 15 }}>⠿</span>
             </div>
           );
         })}
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {pool.map((k) => {
-          const used = placed.includes(k);
-          return (
-            <button key={k} onClick={() => tap(k)} disabled={used}
-              className="rounded-lg p-2 text-left transition-all active:scale-95"
-              style={{ border: `1px solid ${used ? C.ok + "44" : C.line}`, background: used ? "rgba(30,80,50,0.2)" : C.panel, color: used ? C.dim : C.text, opacity: used ? 0.5 : 1 }}>
-              <div className="text-sm font-bold">{k}</div>
-              <div style={{ color: C.dim, fontSize: 10 }}>{DMAP[k]}</div>
-            </button>
-          );
-        })}
-      </div>
-      <p className="text-xs mt-3 font-mono" style={{ color: C.dim }}>▸ 가장 먼저 일어난 사건부터 순서대로 선택하세요 ({placed.length}/{CORRECT.length})</p>
+      <button onClick={check} disabled={locked}
+        className="w-full rounded-lg py-3 font-mono font-bold active:scale-95 transition-all"
+        style={locked ? { ...btnGhost, opacity: 0.5 } : btnPrimary()}>
+        형성 과정 복원 ▸
+      </button>
+      <p className="text-xs mt-2 font-mono" style={{ color: C.dim }}>▸ 카드를 꾹 누른 채 위아래로 드래그해 순서를 바꾸세요</p>
     </div>
   );
 }
