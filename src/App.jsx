@@ -1474,8 +1474,11 @@ function mkCrystal() {
   return g;
 }
 const PROP_BUILDERS = { console: mkConsole, antenna: mkAntenna, telescope: mkTelescope, reactor: mkReactor, screen: mkScreen, table: mkTable };
-/* 물체 위에 띄우는 이름표 높이 (소품 종류별) — 각 소품 꼭대기 바로 위 */
-const LABEL_H = { console: 1.95, antenna: 2.7, telescope: 2.5, reactor: 2.2, screen: 2.5, table: 2.4 };
+/* 물체의 실제 꼭대기(바운딩 박스) 기준 이름표 높이 — 어떤 소품이든 꼭대기 살짝 위에 붙는다 */
+function labelHeightFor(g, margin = 0.38) {
+  const box = new THREE.Box3().setFromObject(g);
+  return box.max.y - g.position.y + margin;
+}
 
 /* ----- 떠 있는 이름표 스프라이트 — 어떤 물체를 조사해야 하는지 방에서 바로 보이게 ----- */
 function makeLabelSprite(text, color) {
@@ -1583,14 +1586,14 @@ function createEngine(canvas, callbacks) {
       scene.add(g);
       register(g, { kind: "puzzle", step: p.step, label: p.label, solved: solvedSet.has(p.step) }, p.dist || 4.4);
       const isSolved = solvedSet.has(p.step);
-      attachLabel(g, (isSolved ? "✓ " : "") + p.label, isSolved ? "#4ade80" : "#8be9fd", LABEL_H[p.type] || 2.6);
+      attachLabel(g, (isSolved ? "✓ " : "") + p.label, isSolved ? "#4ade80" : "#8be9fd", labelHeightFor(g));
       if (isSolved && g.userData.pulse) g.userData.pulse.material.emissive = new THREE.Color(0x33dd77);
     }
     W.memos.forEach((m) => {
       const g = mkPad(0x66ddff);
       g.position.set(...m.pos); g.rotation.y = m.rotY || 0;
       scene.add(g);
-      attachLabel(g, "📄 " + m.label, "#66ddff", 0.6);
+      attachLabel(g, "📄 " + m.label, "#66ddff", labelHeightFor(g, 0.3));
       if (m.stand) {
         const groundY = m.pos[1] - 1.3;
         const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 1.25, 8), M(0x3a4452));
@@ -1949,7 +1952,7 @@ function createEngine(canvas, callbacks) {
     gate.position.set(cfg.gate[0], cfg.gateY || 0, cfg.gate[1]);
     scene.add(gate);
     register(gate, { kind: "gate", label: "점프 게이트" }, 5.2);
-    attachLabel(gate, "🔒 점프 게이트", "#ff96a5", 4.45);
+    attachLabel(gate, "🔒 점프 게이트", "#ff96a5", labelHeightFor(gate));
     state.gate = gate;
 
     const sh = cfg.heightAt(cfg.spawn[0], cfg.spawn[1]) || 0;
@@ -1966,7 +1969,7 @@ function createEngine(canvas, callbacks) {
     state.gate.userData.disc.material.opacity = open ? 0.85 : 0.55;
     const meta = state.gate.userData.meta;
     meta.label = open ? (last ? "착륙 게이트 — 기동 준비 완료" : "점프 게이트 — 기동 준비 완료") : "점프 게이트";
-    attachLabel(state.gate, open ? (last ? "✓ 착륙 게이트 — 개방" : "✓ 점프 게이트 — 개방") : "🔒 점프 게이트", open ? "#4ade80" : "#ff96a5", 4.45);
+    attachLabel(state.gate, open ? (last ? "✓ 착륙 게이트 — 개방" : "✓ 점프 게이트 — 개방") : "🔒 점프 게이트", open ? "#4ade80" : "#ff96a5", state.gate.userData.labelH || 4.45);
   }
   function markSolved(stepIdx) {
     for (const g of state.interactables) {
@@ -2662,8 +2665,9 @@ export default function App() {
               onKeyDown={(e) => { if (e.key === "Enter" && profile.nick.trim()) setScreen("prologue"); }}
               className="w-full rounded-lg px-3 py-3 text-sm outline-none mb-2"
               style={{ background: "#05070d", border: `1px solid ${C.line}`, color: C.text }} />
-            <div className="rounded-lg px-3 py-2 mb-2 text-xs font-bold"
-              style={{ background: "rgba(120,60,0,0.25)", border: `1px solid ${C.warn}55`, color: C.warn }}>
+            {/* 한 줄 유지 — 좁은 화면에서는 글자 크기를 폭에 맞춰 자동 축소 */}
+            <div className="rounded-lg px-2 py-2 mb-2 font-bold text-center whitespace-nowrap"
+              style={{ background: "rgba(120,60,0,0.25)", border: `1px solid ${C.warn}55`, color: C.warn, fontSize: "min(12px, calc((100vw - 88px) / 32))" }}>
               ⚠ 절대 실명을 입력하지 마세요! 반드시 별명(닉네임)으로만!
             </div>
             <p className="text-xs mb-3" style={{ color: C.dim }}>
