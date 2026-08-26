@@ -1479,7 +1479,8 @@ const LABEL_H = { console: 2.4, antenna: 3.2, telescope: 3.0, reactor: 2.9, scre
 
 /* ----- 떠 있는 이름표 스프라이트 — 어떤 물체를 조사해야 하는지 방에서 바로 보이게 ----- */
 function makeLabelSprite(text, color) {
-  const fs = 26, pad = 11;
+  // 박스 없이 글자만 — 어두운 외곽선으로 어느 배경에서도 읽히게 (2x 해상도로 그려 선명하게)
+  const fs = 36, pad = 10;
   const cv = document.createElement("canvas");
   let ctx = cv.getContext("2d");
   const font = `bold ${fs}px 'DungGeunMo','Malgun Gothic',sans-serif`;
@@ -1488,18 +1489,17 @@ function makeLabelSprite(text, color) {
   cv.width = tw + pad * 2; cv.height = fs + pad * 2;
   ctx = cv.getContext("2d");
   ctx.font = font;
-  const r = cv.height / 2;
-  ctx.fillStyle = "rgba(4,8,18,0.78)";
-  ctx.beginPath(); ctx.roundRect(0, 0, cv.width, cv.height, r); ctx.fill();
-  ctx.globalAlpha = 0.6; ctx.strokeStyle = color; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.roundRect(1, 1, cv.width - 2, cv.height - 2, r); ctx.stroke();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(2,4,10,0.9)";
+  ctx.lineWidth = 6;
+  ctx.strokeText(text, cv.width / 2, cv.height / 2 + 1);
+  ctx.fillStyle = color;
   ctx.fillText(text, cv.width / 2, cv.height / 2 + 1);
   const tex = new THREE.CanvasTexture(cv);
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
   spr.renderOrder = 999;
-  const k = 0.013;
+  const k = 0.0055;
   spr.scale.set(cv.width * k, cv.height * k, 1);
   return spr;
 }
