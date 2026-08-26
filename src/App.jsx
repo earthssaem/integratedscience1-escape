@@ -1474,8 +1474,8 @@ function mkCrystal() {
   return g;
 }
 const PROP_BUILDERS = { console: mkConsole, antenna: mkAntenna, telescope: mkTelescope, reactor: mkReactor, screen: mkScreen, table: mkTable };
-/* 물체 위에 띄우는 이름표 높이 (소품 종류별) */
-const LABEL_H = { console: 2.4, antenna: 3.2, telescope: 3.0, reactor: 2.9, screen: 2.8, table: 2.8 };
+/* 물체 위에 띄우는 이름표 높이 (소품 종류별) — 각 소품 꼭대기 바로 위 */
+const LABEL_H = { console: 1.95, antenna: 2.7, telescope: 2.5, reactor: 2.2, screen: 2.5, table: 2.4 };
 
 /* ----- 떠 있는 이름표 스프라이트 — 어떤 물체를 조사해야 하는지 방에서 바로 보이게 ----- */
 function makeLabelSprite(text, color) {
@@ -1590,7 +1590,7 @@ function createEngine(canvas, callbacks) {
       const g = mkPad(0x66ddff);
       g.position.set(...m.pos); g.rotation.y = m.rotY || 0;
       scene.add(g);
-      attachLabel(g, "📄 " + m.label, "#66ddff", 0.85);
+      attachLabel(g, "📄 " + m.label, "#66ddff", 0.6);
       if (m.stand) {
         const groundY = m.pos[1] - 1.3;
         const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 1.25, 8), M(0x3a4452));
@@ -1949,7 +1949,7 @@ function createEngine(canvas, callbacks) {
     gate.position.set(cfg.gate[0], cfg.gateY || 0, cfg.gate[1]);
     scene.add(gate);
     register(gate, { kind: "gate", label: "점프 게이트" }, 5.2);
-    attachLabel(gate, "🔒 점프 게이트", "#ff96a5", 4.7);
+    attachLabel(gate, "🔒 점프 게이트", "#ff96a5", 4.45);
     state.gate = gate;
 
     const sh = cfg.heightAt(cfg.spawn[0], cfg.spawn[1]) || 0;
@@ -1966,7 +1966,7 @@ function createEngine(canvas, callbacks) {
     state.gate.userData.disc.material.opacity = open ? 0.85 : 0.55;
     const meta = state.gate.userData.meta;
     meta.label = open ? (last ? "착륙 게이트 — 기동 준비 완료" : "점프 게이트 — 기동 준비 완료") : "점프 게이트";
-    attachLabel(state.gate, open ? (last ? "✓ 착륙 게이트 — 개방" : "✓ 점프 게이트 — 개방") : "🔒 점프 게이트", open ? "#4ade80" : "#ff96a5", 4.7);
+    attachLabel(state.gate, open ? (last ? "✓ 착륙 게이트 — 개방" : "✓ 점프 게이트 — 개방") : "🔒 점프 게이트", open ? "#4ade80" : "#ff96a5", 4.45);
   }
   function markSolved(stepIdx) {
     for (const g of state.interactables) {
