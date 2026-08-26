@@ -1288,7 +1288,7 @@ const STEP_SHORT = ["광학 센서 보정","미지 신호 해독","목표 항성
 /* 방별 3D 배치: 퍼즐 오브젝트 / 데이터패드(무료 단서) / 크리스털(보너스) */
 const WORLDS = [
   { // ROOM 0 — 원형 관측 데크 (안개)
-    fog: [0xd97a3a, 0.125], amb: 0x664433, floor: 0x2a1a10,
+    fog: [0xd97a3a, 0.085], amb: 0x8a6a52, floor: 0x3d2a1c,
     lights: [[0xffa860, 0, 5, 0], [0x88ccff, -6, 3, 6]],
     accent: 0xffa860, layout: "deck",
     props: [
@@ -1304,7 +1304,7 @@ const WORLDS = [
     clutter: [[-2.5, -7, "crate2"], [3, -7.5, "barrel"], [-6.5, 6, "crate"], [-3, 3.2, "barrel"], [7.5, 1, "crate"], [1.8, -1.8, "holo"]],
   },
   { // ROOM 1 — 좁고 긴 기관실 복도
-    fog: [0x551408, 0.055], amb: 0x552211, floor: 0x2a0d08, wall: 0x40140a,
+    fog: [0x551408, 0.03], amb: 0x7a4433, floor: 0x40201a, wall: 0x5a241a,
     lights: [[0xff5522, 0, 3.8, -3], [0xffaa44, 0, 3.5, 7]],
     accent: 0xff6a33, layout: "corridor",
     props: [
@@ -1320,7 +1320,7 @@ const WORLDS = [
     clutter: [[-3.1, 6.5, "barrel"], [3.1, 7.5, "crate"], [-3.1, -5.2, "crate2"], [3.1, 0.5, "barrel"], [-3.1, 4, "crate"]],
   },
   { // ROOM 2 — 마그마 위 징검다리 플랫폼
-    fog: [0x66220a, 0.03], amb: 0x663322, floor: 0x22110c,
+    fog: [0x66220a, 0.016], amb: 0x8a5a44, floor: 0x3a241c,
     lights: [[0xff6633, 0, 5, 0], [0xffaa66, 0, 2, 8]],
     accent: 0xff8844, layout: "platforms",
     props: [
@@ -1334,7 +1334,7 @@ const WORLDS = [
     clutter: [[-1.8, 7.4, "crate"], [1.1, -9.9, "barrel"], [-6, -1.8, "crate"]],
   },
   { // ROOM 3 — 2층 파노라마 브리지
-    fog: [0x0a1a3a, 0.026], amb: 0x334466, floor: 0x0c1626, wall: 0x14233d,
+    fog: [0x0a1a3a, 0.013], amb: 0x556a88, floor: 0x1a2a44, wall: 0x24384f,
     lights: [[0x66aaff, 0, 5, 0], [0x88ddff, -6, 3, 6], [0xaaccff, 6, 4.5, 7]],
     accent: 0x66aaff, layout: "bridge",
     props: [
@@ -1349,7 +1349,7 @@ const WORLDS = [
     clutter: [[-8, 6, "crate"], [-4, -7.5, "desk"], [-7.5, -2, "barrel"], [8.6, 1.5, "crate2"]],
   },
   { // ROOM 4 — 원형 계단식 관제실
-    fog: [0x06302a, 0.028], amb: 0x2a5a4a, floor: 0x0a1f1a,
+    fog: [0x06302a, 0.014], amb: 0x4a7a66, floor: 0x16342b,
     lights: [[0x33ddbb, 0, 5, 0], [0x66ffdd, 6, 4, 5], [0x33ddbb, -6, 4, -5]],
     accent: 0x33ddbb, layout: "theater",
     props: [
@@ -1474,6 +1474,47 @@ function mkCrystal() {
   return g;
 }
 const PROP_BUILDERS = { console: mkConsole, antenna: mkAntenna, telescope: mkTelescope, reactor: mkReactor, screen: mkScreen, table: mkTable };
+/* 물체 위에 띄우는 이름표 높이 (소품 종류별) */
+const LABEL_H = { console: 2.4, antenna: 3.2, telescope: 3.0, reactor: 2.9, screen: 2.8, table: 2.8 };
+
+/* ----- 떠 있는 이름표 스프라이트 — 어떤 물체를 조사해야 하는지 방에서 바로 보이게 ----- */
+function makeLabelSprite(text, color) {
+  const fs = 26, pad = 11;
+  const cv = document.createElement("canvas");
+  let ctx = cv.getContext("2d");
+  const font = `bold ${fs}px 'DungGeunMo','Malgun Gothic',sans-serif`;
+  ctx.font = font;
+  const tw = Math.ceil(ctx.measureText(text).width);
+  cv.width = tw + pad * 2; cv.height = fs + pad * 2;
+  ctx = cv.getContext("2d");
+  ctx.font = font;
+  const r = cv.height / 2;
+  ctx.fillStyle = "rgba(4,8,18,0.78)";
+  ctx.beginPath(); ctx.roundRect(0, 0, cv.width, cv.height, r); ctx.fill();
+  ctx.globalAlpha = 0.6; ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(1, 1, cv.width - 2, cv.height - 2, r); ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(text, cv.width / 2, cv.height / 2 + 1);
+  const tex = new THREE.CanvasTexture(cv);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+  spr.renderOrder = 999;
+  const k = 0.013;
+  spr.scale.set(cv.width * k, cv.height * k, 1);
+  return spr;
+}
+function attachLabel(group, text, color, h) {
+  if (group.userData.labelSprite) {
+    group.remove(group.userData.labelSprite);
+    group.userData.labelSprite.material.map.dispose();
+    group.userData.labelSprite.material.dispose();
+  }
+  const spr = makeLabelSprite(text, color);
+  spr.position.set(0, h, 0);
+  group.add(spr);
+  group.userData.labelSprite = spr;
+  group.userData.labelH = h;
+}
 
 /* ================================================================
    3D 엔진
@@ -1507,7 +1548,7 @@ function createEngine(canvas, callbacks) {
   function disposeScene() {
     scene.traverse((o) => {
       if (o.geometry) o.geometry.dispose();
-      if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose());
+      if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); });
     });
     while (scene.children.length) scene.remove(scene.children[0]);
     state.interactables = []; state.pulses = []; state.spins = []; state.floats = []; state.gate = null; state.dust = null;
@@ -1541,12 +1582,15 @@ function createEngine(canvas, callbacks) {
       g.position.set(...p.pos); if (p.rotY) g.rotation.y = p.rotY;
       scene.add(g);
       register(g, { kind: "puzzle", step: p.step, label: p.label, solved: solvedSet.has(p.step) }, p.dist || 4.4);
-      if (solvedSet.has(p.step) && g.userData.pulse) g.userData.pulse.material.emissive = new THREE.Color(0x33dd77);
+      const isSolved = solvedSet.has(p.step);
+      attachLabel(g, (isSolved ? "✓ " : "") + p.label, isSolved ? "#4ade80" : "#8be9fd", LABEL_H[p.type] || 2.6);
+      if (isSolved && g.userData.pulse) g.userData.pulse.material.emissive = new THREE.Color(0x33dd77);
     }
     W.memos.forEach((m) => {
       const g = mkPad(0x66ddff);
       g.position.set(...m.pos); g.rotation.y = m.rotY || 0;
       scene.add(g);
+      attachLabel(g, "📄 " + m.label, "#66ddff", 0.85);
       if (m.stand) {
         const groundY = m.pos[1] - 1.3;
         const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 1.25, 8), M(0x3a4452));
@@ -1704,26 +1748,36 @@ function createEngine(canvas, callbacks) {
       { a: [0, 6], b: [0, 10.9], hw: 0.42 },
     ];
     for (const p of plats) {
-      const cy = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r + 0.5, 0.7, 36), M(W.floor, { roughness: 0.9 }));
+      const cy = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r + 0.5, 0.7, 36), M(W.floor, { roughness: 0.85, emissive: 0x1a0d06 }));
       cy.position.set(p.c[0], -0.35, p.c[1]); scene.add(cy);
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(p.r - 0.08, 0.055, 6, 48), EM(accent, 0.9));
-      ring.rotation.x = Math.PI / 2; ring.position.set(p.c[0], 0.03, p.c[1]); scene.add(ring);
+      // 낭떠러지 경계가 한눈에 보이도록 발판 가장자리는 밝은 금색 링 (굵게·강하게)
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(p.r - 0.08, 0.09, 8, 48), EM(0xffd166, 1.8));
+      ring.rotation.x = Math.PI / 2; ring.position.set(p.c[0], 0.04, p.c[1]); scene.add(ring);
     }
     for (const b of brs) {
       const dx = b.b[0] - b.a[0], dz = b.b[1] - b.a[1];
       const len = Math.hypot(dx, dz), ang = Math.atan2(dx, dz);
       const mx = (b.a[0] + b.b[0]) / 2, mz = (b.a[1] + b.b[1]) / 2;
-      const box = new THREE.Mesh(new THREE.BoxGeometry(b.hw * 2, 0.24, len), M(0x2f3947, { metalness: 0.5 }));
+      const box = new THREE.Mesh(new THREE.BoxGeometry(b.hw * 2, 0.24, len), M(0x4a5666, { metalness: 0.5, emissive: 0x141c26 }));
       box.position.set(mx, -0.12, mz); box.rotation.y = ang; scene.add(box);
+      // 다리 양옆 = 밝은 금색 경계선
       for (const side of [-1, 1]) {
-        const st = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, len), EM(accent, 0.8));
-        st.position.set(mx + Math.cos(ang) * b.hw * side, 0.03, mz - Math.sin(ang) * b.hw * side);
+        const st = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, len), EM(0xffd166, 1.6));
+        st.position.set(mx + Math.cos(ang) * b.hw * side, 0.04, mz - Math.sin(ang) * b.hw * side);
         st.rotation.y = ang; scene.add(st);
       }
+      // 다리 중앙 = 청록 안내 점선 (길이 어디로 이어지는지 표시)
+      const nDash = Math.max(2, Math.floor(len / 1.6));
+      for (let i = 0; i < nDash; i++) {
+        const t2 = (i + 0.5) / nDash;
+        const dash = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.7), EM(0x9be8ff, 1.4));
+        dash.position.set(b.a[0] + dx * t2, 0.035, b.a[1] + dz * t2);
+        dash.rotation.y = ang; scene.add(dash);
+      }
     }
-    const planet = new THREE.Mesh(new THREE.SphereGeometry(34, 40, 28), EM(0xff5511, 0.55));
+    const planet = new THREE.Mesh(new THREE.SphereGeometry(34, 40, 28), EM(0xff5511, 0.85));
     planet.position.set(0, -37, 0); scene.add(planet);
-    const glow = new THREE.PointLight(0xff5522, 1.6, 60); glow.position.set(0, -2, 0); scene.add(glow);
+    const glow = new THREE.PointLight(0xff5522, 2.4, 70); glow.position.set(0, -2, 0); scene.add(glow);
     const seg = (x, z, a, b) => {
       const abx = b[0] - a[0], abz = b[1] - a[1];
       const t2 = Math.max(0, Math.min(1, ((x - a[0]) * abx + (z - a[1]) * abz) / (abx * abx + abz * abz)));
@@ -1879,9 +1933,11 @@ function createEngine(canvas, callbacks) {
     const accent = W.accent || 0x88ccff;
     scene.fog = new THREE.FogExp2(W.fog[0], W.fog[1]);
     state.fogTarget = null;
-    scene.background = new THREE.Color(0x02040a);
-    scene.add(new THREE.AmbientLight(W.amb, 1.15));
-    W.lights.forEach(([c, x, y, z]) => { const L = new THREE.PointLight(c, 1.2, 40); L.position.set(x, y, z); scene.add(L); });
+    scene.background = new THREE.Color(0x050a16);
+    scene.add(new THREE.AmbientLight(W.amb, 1.75));
+    // 위(별빛)·아래(바닥 반사)에서 은은히 채워주는 반구광 — 방은 밝게, 분위기는 우주 느낌 유지
+    scene.add(new THREE.HemisphereLight(0xbdd4ff, 0x2a3444, 0.6));
+    W.lights.forEach(([c, x, y, z]) => { const L = new THREE.PointLight(c, 1.6, 48); L.position.set(x, y, z); scene.add(L); });
     addStars();
 
     const cfg = BUILDERS[W.layout](W, accent);
@@ -1893,6 +1949,7 @@ function createEngine(canvas, callbacks) {
     gate.position.set(cfg.gate[0], cfg.gateY || 0, cfg.gate[1]);
     scene.add(gate);
     register(gate, { kind: "gate", label: "점프 게이트" }, 5.2);
+    attachLabel(gate, "🔒 점프 게이트", "#ff96a5", 4.7);
     state.gate = gate;
 
     const sh = cfg.heightAt(cfg.spawn[0], cfg.spawn[1]) || 0;
@@ -1909,6 +1966,7 @@ function createEngine(canvas, callbacks) {
     state.gate.userData.disc.material.opacity = open ? 0.85 : 0.55;
     const meta = state.gate.userData.meta;
     meta.label = open ? (last ? "착륙 게이트 — 기동 준비 완료" : "점프 게이트 — 기동 준비 완료") : "점프 게이트";
+    attachLabel(state.gate, open ? (last ? "✓ 착륙 게이트 — 개방" : "✓ 점프 게이트 — 개방") : "🔒 점프 게이트", open ? "#4ade80" : "#ff96a5", 4.7);
   }
   function markSolved(stepIdx) {
     for (const g of state.interactables) {
@@ -1916,6 +1974,7 @@ function createEngine(canvas, callbacks) {
       if (m.kind === "puzzle" && m.step === stepIdx) {
         m.solved = true;
         if (g.userData.pulse) g.userData.pulse.material.emissive = new THREE.Color(0x33dd77);
+        attachLabel(g, "✓ " + m.label, "#4ade80", g.userData.labelH || 2.6);
       }
     }
   }
@@ -1938,6 +1997,14 @@ function createEngine(canvas, callbacks) {
   const kd = onKey(true), ku = onKey(false);
   window.addEventListener("keydown", kd);
   window.addEventListener("keyup", ku);
+
+  // 탭 직후 브라우저가 발생시키는 지연 click(고스트 클릭)이
+  // 방금 열린 퍼즐 모달의 답 버튼을 눌러 오답 처리되는 것을 차단
+  function suppressGhostClick(ms = 450) {
+    const stop = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+    window.addEventListener("click", stop, true);
+    setTimeout(() => window.removeEventListener("click", stop, true), ms);
+  }
 
   let ptr = null;
   canvas.addEventListener("pointerdown", (e) => {
@@ -1971,6 +2038,7 @@ function createEngine(canvas, callbacks) {
     const meta = obj.userData.meta;
     const d = camera.position.distanceTo(hits[0].point);
     if (d > meta.dist) { callbacks.onFar(); return; }
+    suppressGhostClick();
     callbacks.onInteract(meta);
   });
 
@@ -2142,6 +2210,17 @@ function clearSave() {
   try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
 }
 
+/* ---------- 최종 결과 기록 (localStorage) ----------
+   엔딩 도달 시점의 결과를 기기에 남겨 두어, 보고서를 저장하기 전에
+   새로고침·탭 종료·앱 전환이 일어나도 처음 화면에서 보고서를 다시 열 수 있다. */
+const RESULT_KEY = "arkhe:result";
+function loadResult() {
+  try {
+    const d = JSON.parse(localStorage.getItem(RESULT_KEY));
+    return d && d.v === 1 && d.nick ? d : null;
+  } catch (e) { return null; }
+}
+
 /* ================================================================
    착륙 시퀀스 — 마지막 게이트 통과 후 엔딩 전 연출 (탭하여 스킵)
    ================================================================ */
@@ -2210,6 +2289,7 @@ export default function App() {
   const [eggs, setEggs] = useState(() => new Set());
   const [modal, setModal] = useState(null); // {kind:'puzzle',step}|{kind:'memo',label,text}
   const [modalDone, setModalDone] = useState(false);
+  const [modalGuard, setModalGuard] = useState(false); // 모달 오픈 직후 오터치(고스트 클릭) 방지
   const [aiMsg, setAiMsg] = useState("");
   const [aiTone, setAiTone] = useState("");
   const [hudMsg, setHudMsg] = useState("");
@@ -2228,6 +2308,7 @@ export default function App() {
   const [invNew, setInvNew] = useState(false); // 새 아이템 알림 점멸
   const [confirmExit, setConfirmExit] = useState(false); // 처음 화면 나가기 확인
   const [saveData, setSaveData] = useState(() => loadSave()); // 이어하기용 저장 기록
+  const [lastResult, setLastResult] = useState(() => loadResult()); // 완료된 탐사 결과 (보고서 다시 열기용)
   const [banner, setBanner] = useState(null); // ROOM CLEAR 배너 {room, time}
   const [roomTimes, setRoomTimes] = useState([]); // 방별 클리어 소요 시간(초)
   const [roomStart, setRoomStart] = useState(0); // 현재 방 입장 시점의 누적 기록
@@ -2282,9 +2363,9 @@ export default function App() {
     return () => Sfx.stopAmbient();
   }, [screen, roomIdx]);
 
-  /* 인트로로 돌아올 때 저장 기록 갱신 (이어하기 카드 표시용) */
+  /* 인트로로 돌아올 때 저장 기록 갱신 (이어하기·보고서 다시 열기 카드 표시용) */
   useEffect(() => {
-    if (screen === "intro") setSaveData(loadSave());
+    if (screen === "intro") { setSaveData(loadSave()); setLastResult(loadResult()); }
   }, [screen]);
 
   /* 안드로이드 뒤로가기 가드 — 게임 중 뒤로가기 시 이탈 대신 나가기 확인창 */
@@ -2298,6 +2379,15 @@ export default function App() {
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, [screen]);
+
+  /* 모달이 열린 직후 350ms 동안은 입력을 받지 않음 —
+     물체를 탭한 손가락의 지연 click이 답 버튼을 눌러 오답 처리되는 것 방지 */
+  useEffect(() => {
+    if (!modal) return;
+    setModalGuard(true);
+    const id = setTimeout(() => setModalGuard(false), 350);
+    return () => clearTimeout(id);
+  }, [modal]);
 
   const showToast = (text, kind) => {
     clearTimeout(toastTimer.current);
@@ -2375,6 +2465,12 @@ export default function App() {
       if (roomIdx === WORLDS.length - 1) {
         const t = Math.max(0, Math.floor((Date.now() - startTs) / 1000) + penalty);
         setFinalSec(t); setReport(null); clearSave();
+        // 최종 결과를 기기에 기록 — 보고서 저장 전에 이탈해도 처음 화면에서 다시 열 수 있게
+        try {
+          localStorage.setItem(RESULT_KEY, JSON.stringify({
+            v: 1, nick: profile.nick, t, w: wrongCnt, h: hintCnt, e: eggs.size, roomTimes, at: Date.now(),
+          }));
+        } catch (e) { /* 저장 불가 환경 무시 */ }
         setScreen("landing"); // 착륙 시퀀스 연출 후 엔딩으로
         return;
       }
@@ -2414,6 +2510,18 @@ export default function App() {
     setTut(false); setDragHint(false);
     setDlg(null); pendingRef.current = null; introRef.current = true;
     setScreen("game");
+  };
+
+  /* 저장된 최종 결과로 엔딩 화면 복원 — 보고서를 못 받은 채 이탈해도 다시 받을 수 있게 */
+  const reopenResult = () => {
+    const d = loadResult();
+    if (!d) return;
+    setProfile({ nick: d.nick });
+    setFinalSec(d.t || 0); setWrongCnt(d.w || 0); setHintCnt(d.h || 0);
+    setEggs(new Set(Array.from({ length: Math.min(5, d.e || 0) }, (_, i) => i)));
+    setRoomTimes(d.roomTimes || []);
+    setReport(null);
+    setScreen("ending");
   };
 
   /* 퍼즐 콜백 */
@@ -2486,7 +2594,7 @@ export default function App() {
     }
   };
   const orderProgress = (p) => {
-    if (roomIdx === 0 && engineRef.current) engineRef.current.setFogDensity(0.125 - p * 0.1);
+    if (roomIdx === 0 && engineRef.current) engineRef.current.setFogDensity(0.085 - p * 0.065);
   };
 
   /* 결과 보고서 이미지 생성 + 다운로드 */
@@ -2505,15 +2613,15 @@ export default function App() {
     const stamp = new Date(rec.at);
     const pad2 = (n) => String(n).padStart(2, "0");
     const fname = `ARKHE_보고서_${rec.nick}_${stamp.getFullYear()}${pad2(stamp.getMonth() + 1)}${pad2(stamp.getDate())}_${pad2(stamp.getHours())}${pad2(stamp.getMinutes())}.png`;
-    cv.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      if (report && report.url) URL.revokeObjectURL(report.url);
-      setReport({ url, fname });
+    // blob URL 대신 dataURL 사용 — 다운로드 중 페이지가 이동하거나 URL이 만료되어
+    // 보고서가 사라지는 문제 방지. 화면의 미리보기 이미지도 항상 유지된다.
+    const url = cv.toDataURL("image/png");
+    setReport({ url, fname });
+    try {
       const a = document.createElement("a");
-      a.href = url; a.download = fname;
+      a.href = url; a.download = fname; a.rel = "noopener";
       document.body.appendChild(a); a.click(); a.remove();
-    }, "image/png");
+    } catch (e) { /* 자동 다운로드 실패 시 화면의 이미지를 길게 눌러 저장하도록 안내됨 */ }
   };
 
   const GlobalCss = (
@@ -2589,6 +2697,22 @@ export default function App() {
                   🗑 삭제
                 </button>
               </div>
+            </div>
+          )}
+          {/* 완료된 탐사 결과 — 보고서를 못 받았어도 여기서 다시 열 수 있음 */}
+          {lastResult && (
+            <div className="rounded-xl p-4 mt-3" style={{ background: C.panel, border: `1px solid ${C.hud}33` }}>
+              <div className="font-mono text-xs mb-2" style={{ color: C.hud }}>🏅 완료된 탐사 기록</div>
+              <div className="text-sm mb-3" style={{ color: C.text }}>
+                <b>{lastResult.nick}</b>
+                <span className="font-mono text-xs ml-2" style={{ color: C.dim }}>
+                  최종 기록 {fmt(lastResult.t || 0)} · 오답 {lastResult.w || 0} · ✦ {lastResult.e || 0}/5
+                </span>
+              </div>
+              <button onClick={reopenResult}
+                className="w-full rounded-lg py-2.5 font-mono font-bold text-sm active:scale-95 transition-all" style={btnPrimary()}>
+                📄 결과 보고서 다시 열기
+              </button>
             </div>
           )}
         </div>
@@ -2906,7 +3030,7 @@ export default function App() {
         {/* 퍼즐/메모 모달 */}
         {modal && (
           <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center p-3" style={{ background: "rgba(2,4,10,0.72)" }}>
-            <div className="w-full max-w-md rounded-xl p-4 overflow-y-auto" style={{ background: "#070c16", border: `1px solid ${C.line}`, maxHeight: "88%" }}>
+            <div className="w-full max-w-md rounded-xl p-4 overflow-y-auto" style={{ background: "#070c16", border: `1px solid ${C.line}`, maxHeight: "88%", pointerEvents: modalGuard ? "none" : "auto" }}>
               {modal.kind === "memo" ? (
                 <div>
                   <div className="font-mono text-xs mb-2" style={{ color: modal.card ? C.ok : "#66ddff" }}>
