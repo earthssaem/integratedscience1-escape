@@ -1335,7 +1335,7 @@ const WORLDS = [
   },
   { // ROOM 3 — 2층 파노라마 브리지
     fog: [0x0a1a3a, 0.013], amb: 0x556a88, floor: 0x1a2a44, wall: 0x24384f,
-    lights: [[0x66aaff, 0, 5, 0], [0x88ddff, -6, 3, 6], [0xaaccff, 6, 4.5, 7]],
+    lights: [[0x66aaff, 0, 5, 0], [0x88ddff, -6, 3, 6], [0xaaccff, 6, 4.5, 7], [0x99ccff, -0.5, 3.5, 7]],
     accent: 0x66aaff, layout: "bridge",
     props: [
       { type: "screen", pos: [-6, 0, -5], rotY: 0.7, step: 8, label: "시스템 회로반", color: 0x66ccff },
@@ -2114,12 +2114,34 @@ function createEngine(canvas, callbacks) {
         post.position.set(2.0, 2.88, rz); scene.add(post);
       }
     }
+    // 계단: 바닥까지 꽉 찬 단 + 디딤판 앞모서리 발광선 + 양쪽 난간 (어두운 바닥·안개 속에서도 구분되게 밝은 재질)
+    const stepMat = M(0x5c7394, { metalness: 0.35, roughness: 0.6 });
     for (let i = 0; i < 8; i++) {
-      const stp = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.28, 2.2), M(0x2a3a55, { metalness: 0.4 }));
-      stp.position.set(-1.35 + i * 0.47, 0.14 + i * 0.29, 7); scene.add(stp);
-      const edge = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.08), EM(accent, 0.8));
-      edge.position.set(-1.35 + i * 0.47, 0.3 + i * 0.29, 5.95); scene.add(edge);
+      const top = 0.29 * (i + 1), sx = -1.35 + i * 0.47;
+      const stp = new THREE.Mesh(new THREE.BoxGeometry(0.5, top, 2.2), stepMat);
+      stp.position.set(sx, top / 2, 7); scene.add(stp);
+      const nose = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.05, 2.2), EM(accent, 1.1));
+      nose.position.set(sx - 0.22, top + 0.01, 7); scene.add(nose);
     }
+    for (const rz of [5.85, 8.15]) {
+      for (const [px, py] of [[-1.5, 0.3], [0.2, 1.3], [1.9, 2.3]]) {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.95, 6), M(0x5a6a80));
+        post.position.set(px, py + 0.47, rz); scene.add(post);
+      }
+      scene.add(rod([-1.5, 1.25, rz], [1.9, 3.25, rz], 0.04, M(0x8ea4c4, { metalness: 0.6 })));
+    }
+    // 계단 위치 안내: 항상 보이는 이름표 + 바닥 화살표(입구 방향 → 계단 방향)
+    const stairLabel = makeLabelSprite("▲ 상부 갑판 계단", "#8be9fd");
+    stairLabel.position.set(-1.2, 3.1, 7); scene.add(stairLabel);
+    const chevron = (x, z, ry) => {
+      for (const s of [-1, 1]) {
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.03, 0.07), EM(accent, 0.9));
+        arm.position.set(x, 0.03, z); arm.rotation.y = ry + s * Math.PI / 4;
+        arm.translateX(-0.15); scene.add(arm);
+      }
+    };
+    for (const z of [3.4, 4.6, 5.8]) chevron(-2.3, z, -Math.PI / 2);
+    chevron(-2.3, 7, 0);
     // 측벽 성도 패널
     for (const [x, z, ry] of [[-9.7, -3, Math.PI / 2], [-9.7, 3, Math.PI / 2]]) {
       const panel = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.9, 0.08), EM(0x1a3a66, 0.6));
