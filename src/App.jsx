@@ -3036,6 +3036,9 @@ export default function App() {
             </div>
           )}
         </div>
+        <div className="absolute bottom-2 left-0 right-0 text-center font-mono text-[10px]" style={{ color: C.dim }}>
+          © 2026 제작: 김연경(earthssaem@gmail.com)
+        </div>
       </div>
     );
   }
