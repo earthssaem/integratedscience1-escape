@@ -1660,41 +1660,72 @@ function mkTable(color) {
   g.userData.pulse = planet;
   return g;
 }
+/* 점프 게이트 — 벽 없이 혼자 서 있어도 자연스러운 독립형 링 장치 (원형 대좌 + 크래들 + 파워 코어 + 셰브론 링) */
 function mkGate(color) {
   const g = new THREE.Group();
-  // 2단 승강 계단 + 경고 스트립
-  const step1 = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.22, 1.7), M(0x2a3340));
-  step1.position.y = 0.11; g.add(step1);
-  const step2 = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.22, 1.3), M(0x323d4c));
-  step2.position.y = 0.33; g.add(step2);
-  const strip = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.05, 0.08), EM(0xffaa33, 0.5));
-  strip.position.set(0, 0.2, 0.83); g.add(strip);
-  // 양쪽 기둥(발광 스트립 포함) + 상단 빔
-  for (const dx of [-2.35, 2.35]) {
-    const py = new THREE.Mesh(new THREE.BoxGeometry(0.42, 4.1, 0.5), M(0x2a3340));
-    py.position.set(dx, 2.05, 0); g.add(py);
-    const st = new THREE.Mesh(new THREE.BoxGeometry(0.08, 3.4, 0.06), EM(color, 0.8));
-    st.position.set(dx - Math.sign(dx) * 0.18, 2.0, 0.26); g.add(st);
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.18, 0.6), M(0x1a2230));
-    cap.position.set(dx, 4.2, 0); g.add(cap);
+  const hull = M(0x3d4a5c, { metalness: 0.65, roughness: 0.4 });
+  const mid = M(0x2b3543, { metalness: 0.55, roughness: 0.55 });
+  const dark = M(0x1a2230, { metalness: 0.6, roughness: 0.5 });
+  const RY = 2.3, R = 1.75; // 링 중심 높이 / 링 반지름 (기관실 천장 4.7 아래에 들어오도록)
+  // 원형 대좌 2단 + 발광 인레이 링
+  const dais1 = new THREE.Mesh(new THREE.CylinderGeometry(2.9, 3.1, 0.18, 36), mid);
+  dais1.position.y = 0.09; g.add(dais1);
+  const dais2 = new THREE.Mesh(new THREE.CylinderGeometry(2.25, 2.45, 0.16, 36), hull);
+  dais2.position.y = 0.26; g.add(dais2);
+  for (const [r, y, c, k] of [[2.7, 0.185, 0xffaa33, 0.45], [2.05, 0.345, color, 0.6]]) {
+    const inlay = new THREE.Mesh(new THREE.TorusGeometry(r, 0.03, 6, 48), EM(c, k));
+    inlay.rotation.x = Math.PI / 2; inlay.position.y = y; g.add(inlay);
   }
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.34, 0.5), M(0x222b36));
-  beam.position.y = 4.4; g.add(beam);
-  const beamGlow = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.08, 0.08), EM(color, 0.7));
-  beamGlow.position.set(0, 4.28, 0.24); g.add(beamGlow);
-  // 링(회전) + 링에 붙어 도는 이미터 노드 6개 + 포털 디스크
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.9, 0.2, 12, 44), M(0x3a4452, { metalness: 0.65 }));
-  ring.position.y = 2.1; g.add(ring);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    const node = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 8), EM(color, 1.2));
-    node.position.set(Math.cos(a) * 1.9, Math.sin(a) * 1.9, 0);
-    ring.add(node);
+  // 링을 받치는 크래들: 양쪽 경사 블록 + 뒤쪽 지주
+  for (const s of [-1, 1]) {
+    const wedge = new THREE.Mesh(new THREE.BoxGeometry(0.55, 1.3, 0.9), hull);
+    wedge.position.set(s * 1.55, 0.85, 0); wedge.rotation.z = s * 0.5; g.add(wedge);
+    g.add(rod([s * 1.9, 0.34, -1.2], [s * 1.25, 1.35, -0.25], 0.12, mid));
   }
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(1.72, 40),
+  // 파워 코어 2기 + 링으로 이어지는 도관
+  for (const s of [-1, 1]) {
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.34, 0.95, 12), mid);
+    core.position.set(s * 2.0, 0.81, -1.5); g.add(core);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.14, 12), EM(color, 0.9));
+    band.position.set(s * 2.0, 0.95, -1.5); g.add(band);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 0.12, 12), dark);
+    cap.position.set(s * 2.0, 1.34, -1.5); g.add(cap);
+    g.add(rod([s * 2.0, 1.3, -1.5], [s * 1.35, RY - 0.9, -0.3], 0.05, dark));
+  }
+  // 고정 외륜: 두꺼운 토러스 + 앞뒤 테 + 셰브론 9개(발광 인서트)
+  const outer = new THREE.Mesh(new THREE.TorusGeometry(R, 0.28, 14, 56), hull);
+  outer.position.y = RY; g.add(outer);
+  for (const dz of [0.18, -0.18]) {
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(R + 0.2, 0.05, 6, 56), dark);
+    rim.position.set(0, RY, dz); g.add(rim);
+  }
+  for (let i = 0; i < 9; i++) {
+    const chev = new THREE.Group();
+    const block = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.5, 0.62), hull);
+    block.position.x = R + 0.05; chev.add(block);
+    const ins = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 0.66), EM(color, 1.0));
+    ins.position.x = R + 0.25; chev.add(ins);
+    chev.rotation.z = (i / 9) * Math.PI * 2 + Math.PI / 2; chev.position.y = RY; g.add(chev);
+  }
+  // 회전 내륜: 얇은 링 + 글리프 노치 24개(셋에 하나는 발광)
+  const inner = new THREE.Group();
+  inner.add(new THREE.Mesh(new THREE.TorusGeometry(R - 0.32, 0.1, 10, 56), mid));
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    const notch = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.05, 0.24), i % 3 === 0 ? EM(color, 1.1) : dark);
+    notch.position.set(Math.cos(a) * (R - 0.32), Math.sin(a) * (R - 0.32), 0);
+    notch.rotation.z = a; inner.add(notch);
+  }
+  inner.position.y = RY; g.add(inner);
+  // 이벤트 호라이즌: 메인 디스크 + 잔물결 링
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(R - 0.42, 48),
     EM(color, 0.8, { transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
-  disc.position.y = 2.1; g.add(disc);
-  g.userData.pulse = disc; g.userData.disc = disc; g.userData.ring = ring;
+  disc.position.y = RY; g.add(disc);
+  for (const [rr, op] of [[0.5, 0.35], [0.95, 0.25]]) {
+    const rip = new THREE.Mesh(new THREE.TorusGeometry(rr, 0.02, 6, 40), EM(0xffffff, 0.8, { transparent: true, opacity: op }));
+    rip.position.set(0, RY, 0.03); g.add(rip);
+  }
+  g.userData.pulse = disc; g.userData.disc = disc; g.userData.ring = inner;
   return g;
 }
 function mkPad(color) {
