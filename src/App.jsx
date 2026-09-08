@@ -87,30 +87,31 @@ const STEPS = [
   },
   {
     room: 3, kind: "wiring", label: "MISSION 4-1 · 시스템 상호작용 인증",
-    intro: "현재 시간대 도착. 지구 궤도 진입에는 인증이 필요합니다. 1단계 — 이 행성의 각 권이 주고받는 상호작용 회로를 연결하십시오.",
-    hint: "'무엇이 무엇에게 영향을 주는가'로 판단하십시오. 화산은 땅(지권)의 물질을 대기(기권)로 내보냅니다.",
+    intro: "현재 시간대 도착. 지구 궤도 진입에는 인증이 필요합니다. 1단계 — 이 행성에서 관측된 현상 6가지가 각각 어느 두 권 사이의 상호작용인지 판단해, 회로를 모두 연결하십시오.",
+    hint: "'무엇이 무엇과 물질·에너지를 주고받는가'로 판단하십시오. 화산은 땅(지권)의 물질을 대기(기권)로 내보냅니다. 생물과 땅, 생물과 물 사이에서 일어나는 현상도 있습니다.",
     success: "회로 연결 완료. 이 행성의 지권·기권·수권·생물권은 서로 물질과 에너지를 교환하며 균형을 이룹니다.",
   },
   {
     room: 3, kind: "water2", label: "MISSION 4-2 · 물 순환 데이터 해독",
-    intro: "인증 2단계 — 물 순환 모식도를 해독하십시오. 대기의 입장에서, 1년 동안 대기로 들어오는 물의 총량(유입량)과 대기에서 나가는 물의 총량(유출량)을 각각 계산해 입력하십시오.",
-    hint: "대기로 들어오는 것은 '증발'(바다에서 320 + 육지에서 60), 대기에서 나가는 것은 '강수'(바다로 284 + 육지로 96)입니다.",
-    success: "유입량 380, 유출량 380 — 정확합니다. 대기로 들어온 만큼 그대로 빠져나갑니다. 유입량 = 유출량, 이 행성의 물은 완벽한 평형 상태입니다. 궤도 진입 승인.",
+    intro: "인증 2단계 — 물 순환 모식도의 손상된 데이터 2개를 복원하십시오. 어느 권에서 보아도 '들어오는 물의 양 = 나가는 물의 양'이라는 평형 원리를 이용해, 육지의 강수량과 육지에서 바다로 흘러가는 물의 양을 계산해 입력하십시오.",
+    hint: "① 대기: 들어온 물(증발 320 + 60)만큼 나갑니다(강수 284 + 육지 강수 ?). ② 육지: 내린 비(강수)만큼 나갑니다(증발 60 + 바다로 유출 ?). 순서대로 계산하십시오.",
+    success: "육지 강수 96, 유출 36 — 정확합니다. 대기도, 육지도, 바다도 유입량 = 유출량. 이 행성의 물은 완벽한 평형 상태입니다. 궤도 진입 승인.",
   },
   {
     room: 4, kind: "scan", label: "MISSION 5-1 · 지표 위험 스캔",
-    intro: "착륙 지점 탐색 중. 지표 스캔 결과 — 지진 다발 지역과 화산 다발 지역이 띠 모양으로 거의 겹칩니다. 이 위험 지대의 정체를 규명하십시오.",
-    hint: "지구 표면은 여러 개의 판으로 나뉘어 있고, 지각 변동은 판과 판이 만나는 곳에 집중됩니다.",
-    success: "변동대 식별 완료. 지진대와 화산대는 대부분 판의 경계와 일치합니다. 경계를 피해 착륙해야 합니다.",
+    intro: "착륙 지점 탐색 중. 지표 스캔 결과 — 지진 다발 지역과 화산 다발 지역이 띠 모양으로 거의 겹칩니다. 이 위험 지대의 정체를 규명하고, 착륙 후보지 A~D 중 안전한 지점을 선택하십시오.",
+    hint: "지구 표면은 여러 개의 판으로 나뉘어 있고, 지각 변동은 판과 판이 만나는 곳에 집중됩니다. 반대로 판의 한가운데는 조용합니다.",
+    success: "변동대 식별 완료. 지진대와 화산대는 대부분 판의 경계와 일치하며, 경계에서 먼 판의 내부는 안정합니다. 후보지 C로 항로 설정.",
     questions: [
       { q: "지진대와 화산대가 거의 일치하며 띠 모양으로 분포하는 이 지역의 정체는?", options: ["대륙의 중심부", "판의 경계 (변동대)", "적도 부근", "해안선"], a: 1 },
-      { q: "이러한 지각 변동을 일으키는 에너지원은?", options: ["태양 에너지", "조력 에너지", "지구 내부 에너지"], a: 2 },
+      { q: "지진·화산과 같은 지각 변동을 일으키는 에너지원은?", options: ["태양 복사 에너지", "지구 내부 에너지", "달의 조력 에너지", "지구 자전에 의한 에너지"], a: 1 },
+      { q: "지도의 착륙 후보지 A~D 중, 판 경계에서 가장 멀어 지진·화산 위험이 낮은 지점은?", options: ["일본 열도 부근", "대서양 한가운데", "오스트레일리아 내륙", "안데스 산맥 서쪽 해안"], a: 2 }, // 보기 A~D 순서 = 지도 표식 A~D
     ],
   },
   {
     room: 4, kind: "match", label: "MISSION 5-2 · 안전 착륙 좌표 확정",
-    intro: "최종 단계. 지표의 대표 지형 4곳의 판 경계 유형을 분석하십시오. 분석이 완료되면 안전 착륙 좌표가 확정됩니다.",
-    hint: "두 대륙판이 충돌하면 습곡 산맥, 판이 다른 판 밑으로 섭입하면 해구, 판이 갈라지면 해령, 판이 어긋나며 스치면 변환 단층이 발달합니다.",
+    intro: "최종 단계. 지표의 대표 지형 6곳의 판 경계 유형을 분석하십시오. 같은 유형이 여러 곳에서 나타날 수 있습니다. 분석이 완료되면 안전 착륙 좌표가 확정됩니다.",
+    hint: "판이 서로 가까워지면 수렴형 — 대륙판끼리 부딪히면 습곡 산맥(충돌형), 해양판이 대륙판 밑으로 들어가면 해구와 화산(섭입형). 서로 멀어지면 해령·열곡(발산형), 나란히 스치면 변환 단층(보존형)입니다.",
     success: "좌표 확정. 착륙 시퀀스 개시. — 138억 년의 항해였습니다. 승무원, 귀환을 환영합니다.",
   },
 ];
@@ -125,10 +126,10 @@ const CONCEPT_CARDS = [
   { title: "초신성 폭발과 무거운 원소", body: "질량이 태양의 10배 이상인 별만 중심에 철(Fe)까지 만들 수 있다. 철은 매우 안정하여 더 이상 융합하지 못하므로 별은 붕괴 후 초신성으로 폭발하고, 이 폭발에서 금·납·우라늄 등 철보다 무거운 원소가 만들어진다." },
   { title: "별의 진화와 블랙홀", body: "주계열성일 때 질량이 태양의 10~20배인 별은 초신성 폭발 후 중성자별을, 20배 이상인 별은 블랙홀을 남긴다. 블랙홀은 빛조차 빠져나오지 못하는 천체다." },
   { title: "지구의 형성 과정", body: "미행성체 충돌로 원시 지구가 뭉침 → 충돌열로 마그마 바다 형성 → 무거운 철·니켈이 가라앉아 핵, 가벼운 규산염이 떠올라 맨틀 형성 → 표면이 식으며 원시 지각과 바다가 생기고 생명이 탄생했다." },
-  { title: "지구시스템의 상호작용", body: "지권·기권·수권·생물권은 서로 물질과 에너지를 주고받는다. 화산 분출은 지권→기권, 광합성은 기권↔생물권, 태풍은 수권→기권, 해안 침식은 수권→지권의 상호작용이다." },
-  { title: "물 순환의 평형", body: "대기로 들어오는 물(증발: 바다 320 + 육지 60 = 380)과 대기에서 나가는 물(강수: 바다 284 + 육지 96 = 380)은 같다. 유입량 = 유출량, 지구의 물은 평형 상태다." },
-  { title: "변동대 — 지진대와 화산대", body: "지진대와 화산대는 띠 모양으로 거의 일치하며, 대부분 판의 경계(변동대)에 분포한다. 지각 변동을 일으키는 에너지원은 지구 내부 에너지다." },
-  { title: "판 경계의 유형", body: "두 대륙판이 충돌하면 습곡 산맥(히말라야), 섭입하면 해구(일본 해구), 갈라지면 해령(대서양 중앙 해령), 어긋나며 스치면 변환 단층(산안드레아스)이 발달한다." },
+  { title: "지구시스템의 상호작용", body: "지권·기권·수권·생물권은 서로 물질과 에너지를 주고받는다. 화산 분출은 지권↔기권, 광합성은 기권↔생물권, 태풍은 수권↔기권, 해안 침식은 수권↔지권, 뿌리의 풍화는 생물권↔지권, 물고기의 호흡은 수권↔생물권의 상호작용이다." },
+  { title: "물 순환의 평형", body: "어느 권에서 보아도 물의 유입량 = 유출량. 대기: 증발(320+60=380) = 강수(284+96=380). 육지: 강수 96 = 증발 60 + 바다로 유출 36. 바다: 증발 320 = 강수 284 + 육지에서 유입 36. 지구의 물은 평형 상태다." },
+  { title: "변동대 — 지진대와 화산대", body: "지진대와 화산대는 띠 모양으로 거의 일치하며, 대부분 판의 경계(변동대)에 분포한다. 지각 변동을 일으키는 에너지원은 지구 내부 에너지다. 경계에서 먼 판의 내부는 상대적으로 안정하다." },
+  { title: "판 경계의 유형", body: "가까워지는 수렴형 — 대륙판끼리 충돌하면 습곡 산맥(히말라야), 해양판이 섭입하면 해구와 화산(일본 해구·안데스). 멀어지는 발산형 — 해령·열곡대(대서양 중앙 해령·동아프리카 열곡대). 스치는 보존형 — 변환 단층(산안드레아스)." },
 ];
 
 /* 대화 캐릭터 — TEACHER_NAME을 원하는 이름으로 바꾸세요 */
@@ -911,26 +912,30 @@ function FormationStep({ done, wrong, locked }) {
 
 /* ----- 4-1 지구시스템 상호작용 다이어그램 ----- */
 function WiringStep({ done, wrong, locked }) {
-  // 4개 권 좌표 (SVG 0~320 x 0~292)
-  // 생물권을 삼각형 밖(위)으로 빼서 화살표·라벨이 어떤 원과도 겹치지 않게 배치
+  // 4개 권을 정사각형 꼭짓점에 배치 (SVG 0~320 x 0~300) → 변 4개 + 대각선 2개 = 6쌍 모두 연결 가능
   const SPH = {
-    생물권: { x: 160, y: 38, c: "#a8dca0", cd: "#5aa84a" },
-    기권: { x: 160, y: 128, c: "#9ec9ef", cd: "#4b90c8" },
-    지권: { x: 66, y: 248, c: "#f5b78a", cd: "#c97b45" },
-    수권: { x: 254, y: 248, c: "#d8d2bf", cd: "#a49877" },
+    지권: { x: 64, y: 64, c: "#f5b78a", cd: "#c97b45" },
+    기권: { x: 256, y: 64, c: "#9ec9ef", cd: "#4b90c8" },
+    수권: { x: 64, y: 236, c: "#d8d2bf", cd: "#a49877" },
+    생물권: { x: 256, y: 236, c: "#a8dca0", cd: "#5aa84a" },
   };
-  // 사용하는 양방향 화살표(권 쌍) — 옵션 1
+  // 양방향 화살표(권 쌍). 대각선은 라벨이 교차점에 겹치지 않도록 30% 지점에 표시(lt)
   const EDGES = [
     { id: "지-기", a: "지권", b: "기권" },
+    { id: "수-생", a: "수권", b: "생물권" },
+    { id: "지-수", a: "지권", b: "수권" },
     { id: "기-생", a: "기권", b: "생물권" },
-    { id: "수-기", a: "수권", b: "기권" },
-    { id: "수-지", a: "수권", b: "지권" },
+    { id: "지-생", a: "지권", b: "생물권", lt: 0.3 },
+    { id: "기-수", a: "기권", b: "수권", lt: 0.3 },
   ];
+  // 6가지 현상 — 설명에 권 이름을 직접 쓰지 않고, 무엇이 무엇과 주고받는지 추론하게 함
   const ITEMS = [
-    { p: "화산 분출", d: "화산 가스가 대기로 방출된다", edge: "지-기" },
-    { p: "광합성", d: "식물이 대기의 이산화 탄소를 흡수한다", edge: "기-생" },
-    { p: "태풍", d: "바다의 수증기가 대기로 공급되어 발생한다", edge: "수-기" },
-    { p: "해안 침식", d: "파도가 바닷가의 지형을 깎는다", edge: "수-지" },
+    { p: "화산 분출", d: "화산 가스와 화산재가 하늘로 솟아오른다", edge: "지-기" },
+    { p: "광합성", d: "식물이 공기 중의 이산화 탄소를 흡수한다", edge: "기-생" },
+    { p: "태풍", d: "따뜻한 바다에서 증발한 수증기가 에너지원이다", edge: "기-수" },
+    { p: "해안 침식", d: "파도가 바닷가의 절벽을 깎아낸다", edge: "지-수" },
+    { p: "뿌리의 풍화", d: "나무 뿌리가 자라며 바위 틈을 벌려 부순다", edge: "지-생" },
+    { p: "물고기의 호흡", d: "물속에 녹아 있는 산소로 숨을 쉰다", edge: "수-생" },
   ];
   const [assign, setAssign] = useState({}); // edgeId -> itemIndex
   const [selCard, setSelCard] = useState(null);
@@ -962,13 +967,14 @@ function WiringStep({ done, wrong, locked }) {
     const A = SPH[e.a], B = SPH[e.b];
     // 원 반지름 32만큼 양 끝을 줄여 화살표가 원에 닿게
     const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy);
-    const ux = dx / len, uy = dy / len, r = 34;
-    return { x1: A.x + ux * r, y1: A.y + uy * r, x2: B.x - ux * r, y2: B.y - uy * r, mx: (A.x + B.x) / 2, my: (A.y + B.y) / 2 };
+    const ux = dx / len, uy = dy / len, r = 34, t = e.lt ?? 0.5;
+    return { x1: A.x + ux * r, y1: A.y + uy * r, x2: B.x - ux * r, y2: B.y - uy * r, mx: A.x + dx * t, my: A.y + dy * t };
   };
+  const labelW = (p) => p.length * 9.5 + 12; // 글자 수에 맞춘 알약 너비
 
   return (
     <div>
-      <svg viewBox="0 0 320 292" style={{ width: "100%", maxWidth: 340, display: "block", margin: "0 auto 8px" }}>
+      <svg viewBox="0 0 320 300" style={{ width: "100%", maxWidth: 340, display: "block", margin: "0 auto 8px" }}>
         <defs>
           {["#3a4a5c", C.ok, C.hud].map((col, i) => (
             <marker key={i} id={"ah" + i} markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
@@ -990,7 +996,7 @@ function WiringStep({ done, wrong, locked }) {
                 markerStart={`url(#ah${mi})`} markerEnd={`url(#ah${mi})`} opacity={good ? 1 : 0.85} />
               {it && (
                 <g>
-                  <rect x={g.mx - 30} y={g.my - 9} width="60" height="18" rx="9"
+                  <rect x={g.mx - labelW(it.p) / 2} y={g.my - 9} width={labelW(it.p)} height="18" rx="9"
                     fill={good ? "rgba(20,60,40,0.95)" : "rgba(10,20,35,0.95)"} stroke={good ? C.ok : C.hud} strokeWidth="0.8" />
                   <text x={g.mx} y={g.my + 3.5} textAnchor="middle" fontSize="9" fill={good ? C.ok : C.hud} fontFamily="monospace">{it.p}</text>
                 </g>
@@ -1014,7 +1020,7 @@ function WiringStep({ done, wrong, locked }) {
         ))}
       </svg>
       <p className="text-center font-mono text-xs mb-2" style={{ color: selCard != null ? C.hud : C.dim }}>
-        {selCard != null ? `"${ITEMS[selCard].p}" — 어느 두 권 사이의 현상인가요? 화살표를 탭하세요` : "① 아래 현상 카드를 선택하세요"}
+        {selCard != null ? `"${ITEMS[selCard].p}" — 어느 두 권 사이의 현상인가요? 화살표를 탭하세요` : `① 현상 카드를 선택하세요 (${Object.keys(assign).length}/${ITEMS.length})`}
       </p>
       <div className="grid grid-cols-2 gap-2 mb-3">
         {ITEMS.map((it, i) => {
@@ -1138,11 +1144,21 @@ function ScanStep({ step, done, wrong, locked }) {
             <polygon key={"v" + i} points={`${x},${y - 4.2} ${x - 3.4},${y + 2} ${x + 3.4},${y + 2}`}
               fill="#fbbf24" stroke="#7c2d12" strokeWidth="0.4" opacity="0.95" />
           ))}
+          {/* 착륙 후보지 A~D (3번 질문용) — A 일본 열도, B 대서양 중앙 해령, C 오스트레일리아 내륙(판 내부), D 안데스 */}
+          {phase >= 2 && [["A", 270, 44], ["B", 125, 67], ["C", 262, 95], ["D", 89.6, 88]].map(([k, x, y]) => (
+            <g key={"site" + k}>
+              <circle cx={x} cy={y} r="7.5" fill="rgba(4,14,13,0.9)" stroke="#8be9fd" strokeWidth="1.1" />
+              <circle cx={x} cy={y} r="10" fill="none" stroke="#8be9fd" strokeWidth="0.6" opacity="0.6"
+                style={{ animation: "arkheTwinkle 1.6s ease-in-out infinite" }} />
+              <text x={x} y={y + 3.4} textAnchor="middle" fontSize="9" fontWeight="bold" fill="#8be9fd" fontFamily="monospace">{k}</text>
+            </g>
+          ))}
         </svg>
-        <div className="font-mono px-1 pb-1 flex gap-3" style={{ color: C.dim, fontSize: 10 }}>
+        <div className="font-mono px-1 pb-1 flex flex-wrap gap-x-3" style={{ color: C.dim, fontSize: 10 }}>
           <span><span style={{ color: "#f87171" }}>●</span> 지진 다발</span>
           {phase >= 1 && <span><span style={{ color: "#fbbf24" }}>▲</span> 화산 다발</span>}
           {phase >= 2 && <span style={{ color: "#f472b6" }}>▬ 위험 지대(띠)</span>}
+          {phase >= 2 && <span style={{ color: "#8be9fd" }}>Ⓐ~Ⓓ 착륙 후보지</span>}
         </div>
       </div>
       {phase >= 2
@@ -1154,23 +1170,32 @@ function ScanStep({ step, done, wrong, locked }) {
 
 /* ----- 5-2 지형-경계 매칭 ----- */
 function MatchStep({ done, wrong, locked }) {
+  // 6곳 — 유형이 중복되도록 구성(섭입형 2, 발산형 2)해 소거법으로 풀리지 않게 함.
+  // 설명에는 유형 이름 대신 '판의 상대 운동 + 관측되는 지형' 단서만 제시.
   const ITEMS = [
-    { p: "히말라야 산맥", d: "인도판과 유라시아판이 충돌한 거대 습곡 산맥", a: "수렴형 (충돌형)" },
-    { p: "일본 해구", d: "태평양판이 유라시아판 아래로 들어가는 깊은 골짜기", a: "수렴형 (섭입형)" },
-    { p: "대서양 중앙 해령", d: "판이 양쪽으로 갈라지며 새 해양 지각이 생기는 해저 산맥", a: "발산형" },
-    { p: "산안드레아스 단층", d: "두 판이 어긋나는 방향으로 스쳐 지나가는 단층", a: "보존형" },
+    { p: "히말라야 산맥", d: "대륙판(인도)과 대륙판(유라시아)이 서로 가까워짐. 세계 최고봉 지대이며, 정상 부근 암석에서 바다 생물 화석이 발견됨", a: "수렴형 (충돌형)" },
+    { p: "일본 해구", d: "해양판(태평양)이 대륙판(유라시아) 쪽으로 다가옴. 수심 8,000 m가 넘는 깊고 좁은 골 안쪽에 화산 열도와 깊은 지진", a: "수렴형 (섭입형)" },
+    { p: "대서양 중앙 해령", d: "양쪽 판이 서로 멀어짐. 대서양 한가운데를 남북으로 지나는 해저 산맥, 중앙 골짜기에서 마그마가 솟음", a: "발산형" },
+    { p: "산안드레아스 단층", d: "태평양판과 북아메리카판이 서로 반대 방향으로 나란히 미끄러짐. 지진은 잦지만 화산·해구·산맥은 없음", a: "보존형" },
+    { p: "안데스 산맥", d: "해양판(나스카)이 대륙판(남아메리카) 쪽으로 다가옴. 해안을 따라 화산이 늘어선 긴 산맥, 앞바다에는 깊은 해구", a: "수렴형 (섭입형)" },
+    { p: "동아프리카 열곡대", d: "아프리카 대륙이 둘로 갈라지는 중. 길게 찢어진 골짜기(열곡)를 따라 화산과 얕은 지진, 좁고 긴 호수", a: "발산형" },
   ];
   const OPTIONS = ["선택…", "발산형", "수렴형 (충돌형)", "수렴형 (섭입형)", "보존형"];
-  const [sel, setSel] = useState(Array(4).fill("선택…"));
-  const [status, setStatus] = useState(Array(4).fill(null));
+  const [sel, setSel] = useState(Array(ITEMS.length).fill("선택…"));
+  const [status, setStatus] = useState(Array(ITEMS.length).fill(null));
+  const incomplete = sel.some((v) => v === "선택…");
   const check = () => {
-    if (locked) return;
+    if (locked || incomplete) return;
     const st = ITEMS.map((it, i) => sel[i] === it.a);
     setStatus(st);
     st.every(Boolean) ? done() : wrong();
   };
+  const okCnt = status.filter((s) => s === true).length;
   return (
     <div>
+      <p className="font-mono text-xs mb-2" style={{ color: C.dim }}>
+        ▸ 6곳 모두 선택 후 확정하십시오. 같은 유형이 여러 번 나올 수 있습니다.{okCnt > 0 && <span style={{ color: C.ok }}> ({okCnt}/{ITEMS.length} 확인)</span>}
+      </p>
       <div className="grid gap-2 mb-3">
         {ITEMS.map((it, i) => (
           <div key={i} className="rounded-lg p-3" style={{
@@ -1190,9 +1215,11 @@ function MatchStep({ done, wrong, locked }) {
           </div>
         ))}
       </div>
-      <button onClick={check} className="w-full rounded-lg py-3 font-mono font-bold active:scale-95 transition-all"
-        style={btnPrimary({ borderColor: C.ok + "66", color: C.ok, background: "linear-gradient(180deg,#0b3a26,#062818)" })}>
-        착륙 좌표 확정 ▸
+      <button onClick={check} disabled={locked || incomplete} className="w-full rounded-lg py-3 font-mono font-bold active:scale-95 transition-all"
+        style={incomplete && !locked
+          ? { ...btnGhost, opacity: 0.6 }
+          : btnPrimary({ borderColor: C.ok + "66", color: C.ok, background: "linear-gradient(180deg,#0b3a26,#062818)" })}>
+        {incomplete && !locked ? `${ITEMS.length - sel.filter((v) => v !== "선택…").length}곳 더 선택하십시오` : "착륙 좌표 확정 ▸"}
       </button>
     </div>
   );
@@ -1205,29 +1232,32 @@ function WaterDiagram() {
       <div className="font-mono text-xs mb-2 text-center" style={{ color: C.hud }}>물의 순환 모식도 (단위: ×1000 km³/년)</div>
       <svg viewBox="0 0 300 170" style={{ width: "100%", display: "block" }}>
         {/* 대기 */}
-        <rect x="60" y="10" width="180" height="34" rx="8" fill="rgba(70,130,200,0.25)" stroke="#4b90c8" strokeWidth="1" />
-        <text x="150" y="31" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#9ec9ef" fontFamily="monospace">대 기</text>
+        <rect x="50" y="10" width="210" height="34" rx="8" fill="rgba(70,130,200,0.25)" stroke="#4b90c8" strokeWidth="1" />
+        <text x="155" y="31" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#9ec9ef" fontFamily="monospace">대 기</text>
         {/* 바다 */}
-        <rect x="18" y="120" width="120" height="38" rx="8" fill="rgba(40,90,150,0.35)" stroke="#3a6fa8" strokeWidth="1" />
-        <text x="78" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#bcd8f0" fontFamily="monospace">바 다</text>
+        <rect x="14" y="120" width="108" height="38" rx="8" fill="rgba(40,90,150,0.35)" stroke="#3a6fa8" strokeWidth="1" />
+        <text x="68" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#bcd8f0" fontFamily="monospace">바 다</text>
         {/* 육지 */}
-        <rect x="162" y="120" width="120" height="38" rx="8" fill="rgba(120,90,50,0.35)" stroke="#a4783f" strokeWidth="1" />
-        <text x="222" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#e8c89a" fontFamily="monospace">육 지</text>
+        <rect x="178" y="120" width="108" height="38" rx="8" fill="rgba(120,90,50,0.35)" stroke="#a4783f" strokeWidth="1" />
+        <text x="232" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#e8c89a" fontFamily="monospace">육 지</text>
         <defs>
           <marker id="wup" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#60a5fa" /></marker>
           <marker id="wdn" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#94a3b8" /></marker>
+          <marker id="wq" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#fbbf24" /></marker>
         </defs>
-        {/* 증발 (바다→대기 320, 육지→대기 60) : 유입 / 강수 (대기→바다 284, 대기→육지 96) : 유출
-            숫자 라벨은 선 중앙의 어두운 알약 배경 위에 얹어 선과 겹쳐도 읽히게 처리 */}
-        <line x1="50" y1="120" x2="74" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
-        <line x1="124" y1="44" x2="104" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
-        <line x1="190" y1="120" x2="166" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
-        <line x1="234" y1="44" x2="252" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
+        {/* 증발 (바다→대기 320, 육지→대기 60) / 강수 (대기→바다 284, 대기→육지 ?) / 유출 (육지→바다 ?)
+            ? 두 개가 학생이 평형 원리로 복원해야 하는 손상 데이터. 숫자 라벨은 선 위의 어두운 알약에 얹음 */}
+        <line x1="44" y1="120" x2="66" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
+        <line x1="112" y1="44" x2="96" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
+        <line x1="204" y1="120" x2="180" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
+        <line x1="250" y1="44" x2="268" y2="120" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 3" markerEnd="url(#wq)" />
+        <line x1="178" y1="146" x2="126" y2="146" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 3" markerEnd="url(#wq)" />
         {[
-          { x: 62, y: 83, t: "↑320", c: "#60a5fa", w: 46 },
-          { x: 114, y: 82, t: "↓284", c: "#94a3b8", w: 46 },
-          { x: 178, y: 83, t: "↑60", c: "#60a5fa", w: 38 },
-          { x: 243, y: 82, t: "↓96", c: "#94a3b8", w: 38 },
+          { x: 55, y: 83, t: "↑320", c: "#60a5fa", w: 46 },
+          { x: 104, y: 82, t: "↓284", c: "#94a3b8", w: 46 },
+          { x: 192, y: 83, t: "↑60", c: "#60a5fa", w: 38 },
+          { x: 259, y: 82, t: "↓ ①?", c: "#fbbf24", w: 40 },
+          { x: 150, y: 131, t: "← ②?", c: "#fbbf24", w: 44 },
         ].map((L) => (
           <g key={L.t}>
             <rect x={L.x - L.w / 2} y={L.y - 8.5} width={L.w} height="17" rx="8.5"
@@ -1236,28 +1266,29 @@ function WaterDiagram() {
           </g>
         ))}
       </svg>
-      <div className="flex flex-wrap justify-center gap-x-4 gap-y-0.5 font-mono" style={{ fontSize: 10 }}>
-        <span style={{ color: "#60a5fa" }}>↑ 증발 (대기로 유입)</span>
-        <span style={{ color: "#94a3b8" }}>↓ 강수 (대기에서 유출)</span>
+      <div className="flex flex-wrap justify-center gap-x-3 gap-y-0.5 font-mono" style={{ fontSize: 10 }}>
+        <span style={{ color: "#60a5fa" }}>↑ 증발</span>
+        <span style={{ color: "#94a3b8" }}>↓ 강수</span>
+        <span style={{ color: "#fbbf24" }}>? 손상된 데이터 (①육지 강수 ②육지→바다 유출)</span>
       </div>
     </div>
   );
 }
 
-/* ----- 4-2 유입량/유출량 각각 입력 ----- */
+/* ----- 4-2 손상된 데이터 복원 — 육지 강수(96) · 육지→바다 유출(36) 을 평형 원리로 계산 ----- */
 function Water2Step({ done, wrong, locked }) {
-  const [inflow, setInflow] = useState("");
-  const [outflow, setOutflow] = useState("");
+  const [inflow, setInflow] = useState("");   // ① 육지 강수량
+  const [outflow, setOutflow] = useState(""); // ② 육지→바다 유출량
   const submit = () => {
     if (locked || !inflow.trim() || !outflow.trim()) return;
-    (inflow.trim() === "380" && outflow.trim() === "380") ? done() : wrong();
+    (inflow.trim() === "96" && outflow.trim() === "36") ? done() : wrong();
   };
   const field = (label, hint, val, set, color) => (
     <div className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.35)", border: `1px solid ${C.line}` }}>
       <div className="font-mono text-xs mb-1" style={{ color }}>{label}</div>
       <div className="mb-2" style={{ color: C.dim, fontSize: 10 }}>{hint}</div>
       <div className="flex items-center gap-2">
-        <input type="number" inputMode="numeric" value={val} placeholder="합계 입력"
+        <input type="number" inputMode="numeric" value={val} placeholder="계산값 입력"
           onChange={(e) => set(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           className="flex-1 rounded-lg px-3 py-2.5 font-mono text-lg tracking-wide outline-none"
@@ -1270,8 +1301,8 @@ function Water2Step({ done, wrong, locked }) {
     <div>
       <WaterDiagram />
       <div className="grid gap-2 mb-3">
-        {field("① 유입량 (대기로 들어오는 물)", "증발: 바다에서 + 육지에서", inflow, setInflow, "#60a5fa")}
-        {field("② 유출량 (대기에서 나가는 물)", "강수: 바다로 + 육지로", outflow, setOutflow, "#94a3b8")}
+        {field("① 육지 강수량 (대기 → 육지)", "대기의 평형: 증발로 들어온 총량 = 강수로 나가는 총량", inflow, setInflow, "#fbbf24")}
+        {field("② 육지 → 바다 유출량 (하천·지하수)", "육지의 평형: 강수로 들어온 양 = 증발 + 바다로 유출", outflow, setOutflow, "#fbbf24")}
       </div>
       <button onClick={submit} className="w-full rounded-lg py-3 font-mono font-bold active:scale-95 transition-all" style={btnPrimary()}>
         데이터 전송 ▸
@@ -2543,57 +2574,156 @@ function loadResult() {
 /* ================================================================
    착륙 시퀀스 — 마지막 게이트 통과 후 엔딩 전 연출 (탭하여 스킵)
    ================================================================ */
+/* 고도 프로파일 (초 → m). 구간별 선형 보간 — 궤도(400 km)에서 접지(0)까지 */
+const LAND_ALT = [[0, 400000], [2.2, 120000], [4.4, 12000], [5.6, 900], [6.2, 0]];
+const altAt = (t) => {
+  for (let i = 1; i < LAND_ALT.length; i++) {
+    const [t0, a0] = LAND_ALT[i - 1], [t1, a1] = LAND_ALT[i];
+    if (t <= t1) return a0 + (a1 - a0) * ((t - t0) / (t1 - t0));
+  }
+  return 0;
+};
+const fmtAlt = (m) => (m >= 100000 ? `${Math.round(m / 1000).toLocaleString()} km` : `${Math.round(m).toLocaleString()} m`);
+/* 구름층 통과 연출용 구름 조각 — 위치·크기·타이밍 고정값 (렌더마다 흔들리지 않게) */
+const LAND_CLOUDS = [
+  { l: -10, w: 62, h: 13, d: 0.0, dur: 1.25, o: 0.85 }, { l: 45, w: 70, h: 15, d: 0.18, dur: 1.15, o: 0.9 },
+  { l: 15, w: 52, h: 11, d: 0.42, dur: 1.05, o: 0.7 }, { l: 60, w: 58, h: 12, d: 0.6, dur: 1.2, o: 0.8 },
+  { l: -20, w: 80, h: 16, d: 0.85, dur: 1.1, o: 0.85 }, { l: 35, w: 48, h: 10, d: 1.05, dur: 1.0, o: 0.65 },
+  { l: 55, w: 75, h: 14, d: 1.3, dur: 1.15, o: 0.8 }, { l: 0, w: 56, h: 12, d: 1.5, dur: 1.05, o: 0.7 },
+];
+
 function LandingSequence({ nick, onDone }) {
-  const [phase, setPhase] = useState(0); // 0 진입 1 감속 2 카운트다운 3 착륙 성공
+  const [phase, setPhase] = useState(0); // 0 궤도 이탈 1 대기권 진입(플라스마) 2 구름층 통과 3 착륙 성공
   const [flash, setFlash] = useState(false);
+  const [alt, setAlt] = useState(LAND_ALT[0][1]);
   const doneRef = useRef(false);
   const finish = useCallback(() => {
     if (doneRef.current) return;
     doneRef.current = true;
     onDone();
   }, [onDone]);
+  /* 지구 크기·위치를 화면 비율에 맞춰 계산 — 어떤 기기에서든
+     45%: 지구가 화면을 가득 채우고(위쪽 가장자리 10vh), 100%: 지평선이 62vh에서 거의 평평하게 보이도록 */
+  const geo = useMemo(() => {
+    const h = window.innerHeight || 844;
+    const R0 = 0.6 * h;                        // 기본 반지름 — 화면 높이 기준이라 확대 배율이 기기와 무관하게 일정(최대 ×3.7)
+    const R1 = 0.62 * h, R2 = 2.2 * h;         // 45% / 100% 시점의 반지름
+    return {
+      size: R0 * 2,
+      s1: R1 / R0, y1: 0.10 * h + R1 - 0.5 * h, // 위 가장자리 10vh
+      s2: R2 / R0, y2: 0.62 * h + R2 - 0.5 * h, // 위 가장자리(지평선) 62vh
+    };
+  }, []);
   useEffect(() => {
     Sfx.rumble(6.2);
+    const t0 = performance.now();
     const ts = [
       setTimeout(() => setPhase(1), 2200),
       setTimeout(() => setPhase(2), 4400),
       setTimeout(() => { setFlash(true); Sfx.thud(); }, 6200),
-      setTimeout(() => { setPhase(3); Sfx.clear(); }, 6800),
-      setTimeout(finish, 9400),
+      setTimeout(() => { setPhase(3); Sfx.clear(); }, 6550), // 섬광이 가장 밝은 순간에 지상 장면으로 전환
+      setTimeout(finish, 9600),
     ];
-    return () => ts.forEach(clearTimeout);
+    const iv = setInterval(() => setAlt(altAt((performance.now() - t0) / 1000)), 60);
+    return () => { ts.forEach(clearTimeout); clearInterval(iv); };
   }, [finish]);
   const LINES = [
-    "궤도 이탈 — 대기권 진입 개시",
-    "감속 중 — 열 차폐 정상 · 고도 12,000 m",
-    "착륙 지점 고정 — 접지 3… 2… 1…",
+    "궤도 이탈 — 역추진 점화 · 하강 개시",
+    "대기권 진입 — 열 차폐 정상 · 플라스마 발생",
+    "구름층 통과 — 착륙 지점 고정 · 접지 3… 2… 1…",
   ];
+  const entering = phase >= 1 && phase < 3;
   return (
     <div className="fixed inset-0 overflow-hidden select-none" style={{ background: "#04060d", cursor: "pointer" }} onPointerDown={finish}>
-      <StarField count={70} />
-      {/* 다가오는 지구 */}
-      <div className="absolute left-1/2 top-1/2" style={{
-        width: "130vmin", height: "130vmin", marginLeft: "-65vmin", marginTop: "-65vmin",
-        borderRadius: "50%",
-        background: "radial-gradient(circle at 36% 32%, #9fd7ff 0%, #4d9fe8 22%, #2160b8 46%, #123c7a 72%, #0a2450 100%)",
-        boxShadow: "0 0 130px rgba(90,170,255,0.5), inset -50px -40px 110px rgba(0,0,20,0.55)",
-        animation: "arkheEarthGrow 6.4s ease-in forwards",
-      }}>
-        <div className="absolute inset-0" style={{
-          borderRadius: "50%",
-          background: "radial-gradient(ellipse 30% 11% at 30% 40%, rgba(255,255,255,.5), transparent 70%), radial-gradient(ellipse 38% 10% at 62% 63%, rgba(255,255,255,.42), transparent 70%), radial-gradient(ellipse 24% 9% at 52% 24%, rgba(255,255,255,.45), transparent 70%)",
-        }} />
+      {/* 별 — 대기권에 들어서면 하늘이 밝아지며 사라짐 */}
+      <div className="absolute inset-0" style={{ opacity: phase >= 2 ? 0 : 1, transition: "opacity 1.6s ease" }}>
+        <StarField count={80} />
       </div>
-      {/* HUD 텍스트 + 진동 */}
+      {phase < 3 && (
+        <div className="absolute inset-0" style={{ animation: entering ? "arkheRumble 0.22s linear infinite" : "none" }}>
+          {/* 다가오는 지구 — 커지는 것이 아니라 카메라가 내려가며 지평선이 화면 아래로 펼쳐짐 */}
+          <div className="absolute left-1/2 top-1/2" style={{
+            width: geo.size, height: geo.size, marginLeft: -geo.size / 2, marginTop: -geo.size / 2,
+            borderRadius: "50%",
+            "--ey1": `${geo.y1}px`, "--es1": geo.s1, "--ey2": `${geo.y2}px`, "--es2": geo.s2,
+            // 가장자리 3%를 투명하게 페이드 — 크게 확대될 때 원 경계의 계단 현상을 대기 광채에 녹임
+            background: "radial-gradient(circle at 36% 30%, #b6e3ff 0%, #57a8ec 20%, #2a6cc0 44%, #163f82 70%, #0b2452 92%, rgba(11,36,82,0.7) 97%, rgba(11,36,82,0) 100%)",
+            boxShadow: "0 0 28px 10px rgba(140,200,255,0.55), 0 0 90px 30px rgba(80,150,255,0.28), inset -60px -50px 140px rgba(0,0,20,0.6)",
+            animation: "arkheEarthApproach 6.4s forwards",
+            willChange: "transform",
+          }}>
+            {/* 대륙 */}
+            <div className="absolute inset-0" style={{
+              borderRadius: "50%",
+              background: "radial-gradient(ellipse 22% 16% at 34% 38%, rgba(96,150,70,.75), transparent 70%), radial-gradient(ellipse 14% 20% at 62% 58%, rgba(120,140,60,.7), transparent 70%), radial-gradient(ellipse 18% 10% at 48% 22%, rgba(210,225,240,.8), transparent 70%)",
+            }} />
+            {/* 구름층 — 천천히 회전 */}
+            <div className="absolute inset-0" style={{
+              borderRadius: "50%", animation: "arkheSpinSlow 80s linear infinite",
+              background: "radial-gradient(ellipse 30% 9% at 30% 44%, rgba(255,255,255,.55), transparent 70%), radial-gradient(ellipse 36% 8% at 64% 66%, rgba(255,255,255,.45), transparent 70%), radial-gradient(ellipse 24% 7% at 54% 26%, rgba(255,255,255,.5), transparent 70%), radial-gradient(ellipse 20% 6% at 40% 74%, rgba(255,255,255,.4), transparent 70%)",
+            }} />
+          </div>
+          {/* 대기권 하늘 — 진입할수록 파랗게 밝아지며 지구의 가장자리를 안개처럼 덮음 */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: "linear-gradient(180deg, rgba(8,20,48,0) 0%, rgba(24,74,150,0.55) 45%, rgba(110,170,235,0.95) 100%)",
+            opacity: phase >= 2 ? 1 : phase >= 1 ? 0.35 : 0, transition: "opacity 1.8s ease",
+          }} />
+          {/* 구름층 통과 — 구름 조각들이 아래에서 위로 빠르게 스쳐 지나감 */}
+          {phase >= 2 && LAND_CLOUDS.map((c, i) => (
+            <div key={i} className="absolute pointer-events-none" style={{
+              left: `${c.l}vw`, top: "100vh", width: `${c.w}vw`, height: `${c.h}vh`, borderRadius: "50%",
+              background: "radial-gradient(ellipse at center, rgba(255,255,255,.95) 0%, rgba(255,255,255,.5) 40%, rgba(255,255,255,0) 70%)",
+              filter: "blur(5px)", opacity: 0,
+              animation: `arkheCloudPass ${c.dur}s linear ${c.d}s forwards`, "--co": c.o,
+            }} />
+          ))}
+          {/* 플라스마 — 대기권 진입 마찰열 (아래쪽에서 붉게 타오르며 흔들림) */}
+          <div className="absolute inset-0 pointer-events-none" style={{ opacity: phase === 1 ? 1 : phase === 2 ? 0.45 : 0, transition: "opacity 0.9s ease" }}>
+            <div className="absolute inset-0" style={{
+              background: "radial-gradient(ellipse 85% 50% at 50% 108%, rgba(255,140,50,0.95) 0%, rgba(255,70,20,0.55) 40%, rgba(255,40,10,0) 70%)",
+              animation: "arkheFlicker 0.13s ease-in-out infinite alternate",
+            }} />
+            <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 120% 90% at 50% 50%, transparent 55%, rgba(255,90,30,0.35) 100%)" }} />
+          </div>
+        </div>
+      )}
+      {/* 지상 — 착륙 후: 새벽 하늘, 지평선, 착륙장 유도등 */}
+      {phase >= 3 && (
+        <div className="absolute inset-0" style={{ animation: "arkheFadeIn 1.2s ease-out" }}>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, #060d22 0%, #14315e 40%, #6a7fb0 56%, #f0b070 62%)" }} />
+          <div className="absolute left-0 right-0" style={{ top: "62vh", height: 2, background: "#ffe2b0", boxShadow: "0 0 18px 4px rgba(255,210,150,0.7)" }} />
+          <div className="absolute left-0 right-0 bottom-0" style={{ top: "62vh", background: "linear-gradient(180deg, #4d5a3e 0%, #26301f 30%, #0d130b 100%)" }} />
+          {/* 유도등 */}
+          {[14, 30, 46, 62, 78].map((x, i) => (
+            <div key={i} className="absolute rounded-full" style={{
+              left: `${x}vw`, top: `${70 + (i % 2) * 6}vh`, width: 6, height: 6, background: "#4ade80",
+              boxShadow: "0 0 10px 3px rgba(74,222,128,0.8)", animation: `arkheTwinkle 1.2s ease-in-out ${i * 0.15}s infinite`,
+            }} />
+          ))}
+          {/* 착지 먼지 */}
+          <div className="absolute left-1/2 pointer-events-none" style={{
+            top: "62vh", width: "90vw", height: "22vh", marginLeft: "-45vw", borderRadius: "50%",
+            background: "radial-gradient(ellipse at center, rgba(200,180,140,.55), rgba(200,180,140,0) 70%)",
+            animation: "arkheDust 2.4s ease-out forwards",
+          }} />
+        </div>
+      )}
+      {/* HUD */}
       <div className="absolute inset-0 flex flex-col items-center justify-between py-12 px-4 pointer-events-none"
-        style={{ animation: phase >= 1 && phase < 3 ? "arkheRumble 0.28s linear infinite" : "none" }}>
+        style={{ animation: entering ? "arkheRumble 0.28s linear infinite" : "none" }}>
         <div className="font-mono text-sm text-center px-4 py-2.5 rounded-lg max-w-sm"
           style={{ background: "rgba(4,8,16,0.72)", border: `1px solid ${phase >= 3 ? C.ok + "66" : C.line}`, color: phase >= 3 ? C.ok : C.hud }}>
           {phase < 3
-            ? <Typewriter text={LINES[Math.min(phase, 2)]} speed={20} />
+            ? <>
+                <Typewriter text={LINES[Math.min(phase, 2)]} speed={20} />
+                <div className="mt-1.5 flex justify-center gap-4" style={{ fontSize: 11, color: phase >= 1 ? C.warn : C.dim }}>
+                  <span>ALT <b style={{ color: C.text }}>{fmtAlt(alt)}</b></span>
+                  <span>HULL <b style={{ color: phase === 1 ? C.bad : C.ok }}>{phase === 1 ? "1,650 °C" : "정상"}</b></span>
+                </div>
+              </>
             : <>🌍 착륙 성공 — 귀환을 환영합니다, {nick}</>}
         </div>
-        <div className="font-mono text-xs animate-pulse" style={{ color: C.dim, textShadow: "0 1px 4px #000" }}>탭하여 건너뛰기 ▸</div>
+        <div className="font-mono text-xs animate-pulse px-3 py-1 rounded-full" style={{ color: C.text, background: "rgba(4,8,16,0.55)" }}>탭하여 건너뛰기 ▸</div>
       </div>
       {flash && <div className="absolute inset-0 pointer-events-none" style={{ background: "#eaf6ff", animation: "arkheFlash 1.3s ease-out forwards" }} />}
     </div>
@@ -2950,7 +3080,12 @@ export default function App() {
       @keyframes arkheFlash {0%{opacity:0}25%{opacity:1}100%{opacity:0}}
       @keyframes arkheShake {0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
       @keyframes arkheBanner {0%{opacity:0;transform:scale(.6)}12%{opacity:1;transform:scale(1.08)}22%{transform:scale(1)}78%{opacity:1}100%{opacity:0;transform:scale(1.04)}}
-      @keyframes arkheEarthGrow {from{transform:scale(.12)}to{transform:scale(1.2)}}
+      @keyframes arkheEarthApproach {0%{transform:translateY(0) scale(.1);animation-timing-function:ease-in}45%{transform:translateY(var(--ey1)) scale(var(--es1));animation-timing-function:ease-in-out}100%{transform:translateY(var(--ey2)) scale(var(--es2))}}
+      @keyframes arkheSpinSlow {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+      @keyframes arkheCloudPass {0%{transform:translateY(0) scale(.7);opacity:0}12%{opacity:var(--co)}100%{transform:translateY(-150vh) scale(1.5);opacity:0}}
+      @keyframes arkheFlicker {from{opacity:.75}to{opacity:1}}
+      @keyframes arkheFadeIn {from{opacity:0}to{opacity:1}}
+      @keyframes arkheDust {0%{opacity:0;transform:scale(.4)}20%{opacity:1}100%{opacity:0;transform:scale(1.6)}}
       @keyframes arkheRumble {0%{transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}100%{transform:translate(0,0)}}
       select option{background:#05070d;color:#8be9fd;}
       input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
