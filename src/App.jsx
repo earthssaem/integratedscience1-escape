@@ -3122,7 +3122,7 @@ export default function App() {
               ⚠ 절대 실명을 입력하지 마세요! 반드시 별명(닉네임)으로만!
             </div>
             <p className="text-xs mb-3" style={{ color: C.dim }}>
-              닉네임은 탈출 완료 후 <b>결과 보고서</b>에 표시됩니다. 보고서 이미지를 저장해 선생님께 제출하세요.
+              닉네임은 탈출 완료 후 <b>결과 보고서</b>에 표시됩니다.<br />보고서 이미지를 저장해 선생님께 제출하세요.
             </p>
             <button disabled={!ready} onClick={() => setScreen("prologue")}
               className="w-full rounded-lg py-3 font-mono font-bold transition-all active:scale-95"
