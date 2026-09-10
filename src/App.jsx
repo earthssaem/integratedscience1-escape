@@ -93,9 +93,9 @@ const STEPS = [
   },
   {
     room: 3, kind: "water2", label: "MISSION 4-2 · 물 순환 데이터 해독",
-    intro: "인증 2단계 — 물 순환 모식도의 손상된 데이터 2개를 복원하십시오. 어느 권에서 보아도 '들어오는 물의 양 = 나가는 물의 양'이라는 평형 원리를 이용해, 육지의 강수량과 육지에서 바다로 흘러가는 물의 양을 계산해 입력하십시오.",
-    hint: "① 대기: 들어온 물(증발 320 + 60)만큼 나갑니다(강수 284 + 육지 강수 ?). ② 육지: 내린 비(강수)만큼 나갑니다(증발 60 + 바다로 유출 ?). 순서대로 계산하십시오.",
-    success: "육지 강수 96, 유출 36 — 정확합니다. 대기도, 육지도, 바다도 유입량 = 유출량. 이 행성의 물은 완벽한 평형 상태입니다. 궤도 진입 승인.",
+    intro: "인증 2단계 — 물 순환 모식도를 해독하십시오. 대기의 입장에서, 1년 동안 대기로 들어오는 물의 총량(유입량)과 대기에서 나가는 물의 총량(유출량)을 각각 계산해 입력하십시오.",
+    hint: "대기로 들어오는 것은 '증발'(바다에서 320 + 육지에서 60), 대기에서 나가는 것은 '강수'(바다로 284 + 육지로 96)입니다.",
+    success: "유입량 380, 유출량 380 — 정확합니다. 대기로 들어온 만큼 그대로 빠져나갑니다. 유입량 = 유출량, 이 행성의 물은 완벽한 평형 상태입니다. 궤도 진입 승인.",
   },
   {
     room: 4, kind: "scan", label: "MISSION 5-1 · 지표 위험 스캔",
@@ -127,7 +127,7 @@ const CONCEPT_CARDS = [
   { title: "별의 진화와 블랙홀", body: "주계열성일 때 질량이 태양의 10~20배인 별은 초신성 폭발 후 중성자별을, 20배 이상인 별은 블랙홀을 남긴다. 블랙홀은 빛조차 빠져나오지 못하는 천체다." },
   { title: "지구의 형성 과정", body: "미행성체 충돌로 원시 지구가 뭉침 → 충돌열로 마그마 바다 형성 → 무거운 철·니켈이 가라앉아 핵, 가벼운 규산염이 떠올라 맨틀 형성 → 표면이 식으며 원시 지각과 바다가 생기고 생명이 탄생했다." },
   { title: "지구시스템의 상호작용", body: "지권·기권·수권·생물권은 서로 물질과 에너지를 주고받는다. 화산 폭발은 지권↔기권, 증산 작용은 생물권↔기권, 태풍 발생은 수권↔기권, U자곡·V자곡의 형성은 수권↔지권의 상호작용이다." },
-  { title: "물 순환의 평형", body: "어느 권에서 보아도 물의 유입량 = 유출량. 대기: 증발(320+60=380) = 강수(284+96=380). 육지: 강수 96 = 증발 60 + 바다로 유출 36. 바다: 증발 320 = 강수 284 + 육지에서 유입 36. 지구의 물은 평형 상태다." },
+  { title: "물 순환의 평형", body: "대기로 들어오는 물(증발: 바다 320 + 육지 60 = 380)과 대기에서 나가는 물(강수: 바다 284 + 육지 96 = 380)은 같다. 유입량 = 유출량, 지구의 물은 평형 상태다." },
   { title: "변동대 — 지진대와 화산대", body: "지진대와 화산대는 띠 모양으로 거의 일치하며, 대부분 판의 경계(변동대)에 분포한다. 지각 변동을 일으키는 에너지원은 지구 내부 에너지다. 경계에서 먼 판의 내부는 상대적으로 안정하다." },
   { title: "판 경계의 유형", body: "가까워지는 수렴형 — 대륙판끼리 충돌하면 습곡 산맥(히말라야), 해양판이 섭입하면 해구와 화산(일본 해구·안데스). 멀어지는 발산형 — 해령·열곡대(대서양 중앙 해령·동아프리카 열곡대). 스치는 보존형 — 변환 단층(산안드레아스)." },
 ];
@@ -1231,32 +1231,29 @@ function WaterDiagram() {
       <div className="font-mono text-xs mb-2 text-center" style={{ color: C.hud }}>물의 순환 모식도 (단위: ×1000 km³/년)</div>
       <svg viewBox="0 0 300 170" style={{ width: "100%", display: "block" }}>
         {/* 대기 */}
-        <rect x="50" y="10" width="210" height="34" rx="8" fill="rgba(70,130,200,0.25)" stroke="#4b90c8" strokeWidth="1" />
-        <text x="155" y="31" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#9ec9ef" fontFamily="monospace">대 기</text>
+        <rect x="60" y="10" width="180" height="34" rx="8" fill="rgba(70,130,200,0.25)" stroke="#4b90c8" strokeWidth="1" />
+        <text x="150" y="31" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#9ec9ef" fontFamily="monospace">대 기</text>
         {/* 바다 */}
-        <rect x="14" y="120" width="108" height="38" rx="8" fill="rgba(40,90,150,0.35)" stroke="#3a6fa8" strokeWidth="1" />
-        <text x="68" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#bcd8f0" fontFamily="monospace">바 다</text>
+        <rect x="18" y="120" width="120" height="38" rx="8" fill="rgba(40,90,150,0.35)" stroke="#3a6fa8" strokeWidth="1" />
+        <text x="78" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#bcd8f0" fontFamily="monospace">바 다</text>
         {/* 육지 */}
-        <rect x="178" y="120" width="108" height="38" rx="8" fill="rgba(120,90,50,0.35)" stroke="#a4783f" strokeWidth="1" />
-        <text x="232" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#e8c89a" fontFamily="monospace">육 지</text>
+        <rect x="162" y="120" width="120" height="38" rx="8" fill="rgba(120,90,50,0.35)" stroke="#a4783f" strokeWidth="1" />
+        <text x="222" y="143" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#e8c89a" fontFamily="monospace">육 지</text>
         <defs>
           <marker id="wup" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#60a5fa" /></marker>
           <marker id="wdn" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#94a3b8" /></marker>
-          <marker id="wq" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#fbbf24" /></marker>
         </defs>
-        {/* 증발 (바다→대기 320, 육지→대기 60) / 강수 (대기→바다 284, 대기→육지 ?) / 유출 (육지→바다 ?)
-            ? 두 개가 학생이 평형 원리로 복원해야 하는 손상 데이터. 숫자 라벨은 선 위의 어두운 알약에 얹음 */}
-        <line x1="44" y1="120" x2="66" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
-        <line x1="112" y1="44" x2="96" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
-        <line x1="204" y1="120" x2="180" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
-        <line x1="250" y1="44" x2="268" y2="120" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 3" markerEnd="url(#wq)" />
-        <line x1="178" y1="146" x2="126" y2="146" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 3" markerEnd="url(#wq)" />
+        {/* 증발 (바다→대기 320, 육지→대기 60) : 유입 / 강수 (대기→바다 284, 대기→육지 96) : 유출
+            숫자 라벨은 선 중앙의 어두운 알약 배경 위에 얹어 선과 겹쳐도 읽히게 처리 */}
+        <line x1="50" y1="120" x2="74" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
+        <line x1="124" y1="44" x2="104" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
+        <line x1="190" y1="120" x2="166" y2="46" stroke="#60a5fa" strokeWidth="2" markerEnd="url(#wup)" />
+        <line x1="234" y1="44" x2="252" y2="120" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#wdn)" />
         {[
-          { x: 55, y: 83, t: "↑320", c: "#60a5fa", w: 46 },
-          { x: 104, y: 82, t: "↓284", c: "#94a3b8", w: 46 },
-          { x: 192, y: 83, t: "↑60", c: "#60a5fa", w: 38 },
-          { x: 259, y: 82, t: "↓ ①?", c: "#fbbf24", w: 40 },
-          { x: 150, y: 131, t: "← ②?", c: "#fbbf24", w: 44 },
+          { x: 62, y: 83, t: "↑320", c: "#60a5fa", w: 46 },
+          { x: 114, y: 82, t: "↓284", c: "#94a3b8", w: 46 },
+          { x: 178, y: 83, t: "↑60", c: "#60a5fa", w: 38 },
+          { x: 243, y: 82, t: "↓96", c: "#94a3b8", w: 38 },
         ].map((L) => (
           <g key={L.t}>
             <rect x={L.x - L.w / 2} y={L.y - 8.5} width={L.w} height="17" rx="8.5"
@@ -1265,29 +1262,28 @@ function WaterDiagram() {
           </g>
         ))}
       </svg>
-      <div className="flex flex-wrap justify-center gap-x-3 gap-y-0.5 font-mono" style={{ fontSize: 10 }}>
-        <span style={{ color: "#60a5fa" }}>↑ 증발</span>
-        <span style={{ color: "#94a3b8" }}>↓ 강수</span>
-        <span style={{ color: "#fbbf24" }}>? 손상된 데이터 (①육지 강수 ②육지→바다 유출)</span>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-0.5 font-mono" style={{ fontSize: 10 }}>
+        <span style={{ color: "#60a5fa" }}>↑ 증발 (대기로 유입)</span>
+        <span style={{ color: "#94a3b8" }}>↓ 강수 (대기에서 유출)</span>
       </div>
     </div>
   );
 }
 
-/* ----- 4-2 손상된 데이터 복원 — 육지 강수(96) · 육지→바다 유출(36) 을 평형 원리로 계산 ----- */
+/* ----- 4-2 유입량/유출량 각각 입력 ----- */
 function Water2Step({ done, wrong, locked }) {
-  const [inflow, setInflow] = useState("");   // ① 육지 강수량
-  const [outflow, setOutflow] = useState(""); // ② 육지→바다 유출량
+  const [inflow, setInflow] = useState("");
+  const [outflow, setOutflow] = useState("");
   const submit = () => {
     if (locked || !inflow.trim() || !outflow.trim()) return;
-    (inflow.trim() === "96" && outflow.trim() === "36") ? done() : wrong();
+    (inflow.trim() === "380" && outflow.trim() === "380") ? done() : wrong();
   };
   const field = (label, hint, val, set, color) => (
     <div className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.35)", border: `1px solid ${C.line}` }}>
       <div className="font-mono text-xs mb-1" style={{ color }}>{label}</div>
       <div className="mb-2" style={{ color: C.dim, fontSize: 10 }}>{hint}</div>
       <div className="flex items-center gap-2">
-        <input type="number" inputMode="numeric" value={val} placeholder="계산값 입력"
+        <input type="number" inputMode="numeric" value={val} placeholder="합계 입력"
           onChange={(e) => set(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           className="flex-1 rounded-lg px-3 py-2.5 font-mono text-lg tracking-wide outline-none"
@@ -1300,8 +1296,8 @@ function Water2Step({ done, wrong, locked }) {
     <div>
       <WaterDiagram />
       <div className="grid gap-2 mb-3">
-        {field("① 육지 강수량 (대기 → 육지)", "대기의 평형: 증발로 들어온 총량 = 강수로 나가는 총량", inflow, setInflow, "#fbbf24")}
-        {field("② 육지 → 바다 유출량 (하천·지하수)", "육지의 평형: 강수로 들어온 양 = 증발 + 바다로 유출", outflow, setOutflow, "#fbbf24")}
+        {field("① 유입량 (대기로 들어오는 물)", "증발: 바다에서 + 육지에서", inflow, setInflow, "#60a5fa")}
+        {field("② 유출량 (대기에서 나가는 물)", "강수: 바다로 + 육지로", outflow, setOutflow, "#94a3b8")}
       </div>
       <button onClick={submit} className="w-full rounded-lg py-3 font-mono font-bold active:scale-95 transition-all" style={btnPrimary()}>
         데이터 전송 ▸
