@@ -976,7 +976,7 @@ function WiringStep({ done, wrong, locked }) {
       <svg viewBox="0 0 320 300" style={{ width: "100%", maxWidth: 340, display: "block", margin: "0 auto 8px" }}>
         <defs>
           {["#3a4a5c", C.ok, C.hud].map((col, i) => (
-            <marker key={i} id={"ah" + i} markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+            <marker key={i} id={"ah" + i} markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto-start-reverse">
               <path d="M0,0 L7,3.5 L0,7 Z" fill={col} />
             </marker>
           ))}
