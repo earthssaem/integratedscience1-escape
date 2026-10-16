@@ -84,3 +84,7 @@ body {
   /* 기본 본문 — 한글/영문 모두 둥근모(픽셀), 미로드 시 Noto Sans KR로 폴백 */
   font-family: "DungGeunMo Adjusted", "Noto Sans KR", sans-serif;
 }
+
+/* 푸터 허브 링크 — 주변 글자색 그대로, 옅은 밑줄로만 표시 */
+footer .hub{color:inherit;font-weight:500;white-space:nowrap;text-decoration:underline;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);text-underline-offset:3px}
+footer .hub:hover{color:#dbe7f4;text-decoration-color:currentColor}

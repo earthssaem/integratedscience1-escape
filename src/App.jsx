@@ -3165,9 +3165,9 @@ export default function App() {
               </button>
             </div>
           )}
-          <div className="text-center font-mono text-[10px] mt-4" style={{ color: C.dim }}>
-            © 2026 제작: 김연경(earthssaem@gmail.com)
-          </div>
+          <footer className="text-center font-mono text-[10px] mt-4" style={{ color: C.dim }}>
+            © 2026 제작: 김연경(earthssaem@gmail.com) | <a className="hub" href="https://earthssaem-lab.vercel.app/" target="_blank" rel="noopener">연경쌤의 지구과학 실험실 둘러보기 →</a>
+          </footer>
         </div>
       </div>
     );
